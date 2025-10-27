@@ -1,25 +1,30 @@
-import React, { useState } from "react";
-import { Table, Button } from "react-bootstrap";
-
-interface Activity {
-  timestamp: string;
-  description: string;
-}
+import React, { useState, useEffect } from "react";
+import { Table, Button, Spinner } from "react-bootstrap";
+import { useActivityLog} from "../hooks/useActivityLog";
 
 const ActivityTable: React.FC = () => {
+  const { activities, loadActivities, loading } = useActivityLog();
   const [sortDesc, setSortDesc] = useState(true);
 
-  const [activities] = useState<Activity[]>([
-    { timestamp: "2025-10-09T10:15:00", description: "Uploaded Assignment 2" },
-    { timestamp: "2025-10-08T16:45:00", description: "Downloaded Assignment 2" },
-    { timestamp: "2025-10-07T14:30:00", description: "Restarted Assignment 1" },
-  ]);
+  useEffect(() => {
+    loadActivities(); // Load activities when page loads
+  }, []);
 
+  //sort activities by timestamp 
   const sortedActivities = [...activities].sort((a, b) => {
     const timeA = new Date(a.timestamp).getTime();
     const timeB = new Date(b.timestamp).getTime();
     return sortDesc ? timeB - timeA : timeA - timeB;
   });
+
+  //loading spinner
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center p-3">
+        <Spinner animation="border" />
+      </div>
+    );
+  }
 
   return (
       <Table bordered hover>
@@ -50,12 +55,20 @@ const ActivityTable: React.FC = () => {
         </tr>
       </thead>
       <tbody>
-        {sortedActivities.map((activity, i) => (
-          <tr key={i}>
-            <td>{new Date(activity.timestamp).toLocaleString()}</td>
-            <td>{activity.description}</td>
+        {sortedActivities.length === 0 ? (
+          <tr>
+            <td colSpan={2} className="text-center text-muted">
+              No activities yet.
+            </td>
           </tr>
-        ))}
+        ) : (
+          sortedActivities.map((activity, i) => (
+            <tr key={i}>
+              <td>{new Date(activity.timestamp).toLocaleString()}</td>
+              <td>{activity.description}</td>
+            </tr>
+          ))
+        )}
       </tbody>
     </Table>
   );
