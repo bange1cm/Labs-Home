@@ -21,6 +21,10 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![ 
             activity::load_log,
             activity::add_activity,
+            assignment::get_assignment,
+            assignment::increment_assignment,
+            assignment::reset_assignment,
+            qemu::launch_qemu,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

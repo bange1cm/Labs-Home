@@ -1,6 +1,4 @@
-# Tauri + React + Typescript
-
-Capstone work in progress by Cora Yerke
+# Capstone work in progress by Cora Yerke
 
 npm run tauri dev
 

@@ -7,10 +7,17 @@ import "../main.css";
 import WarningMessage from "../components/WarningMessage";
 import Button from "react-bootstrap/esm/Button";
 import FileUploadBox from "../components/FileUploadBox";
+import { useAssignmentCounter } from "../hooks/useAssignmentCounter";
+import { useEffect } from "react";
 
 
 function Upload() {
     const navigate = useNavigate();
+    const {currentAssignment, loadAssignment} = useAssignmentCounter();
+
+    useEffect(() => {
+        loadAssignment();
+    }, []);
 
     return(
         <Container>
@@ -26,7 +33,7 @@ function Upload() {
             </Row>
             <Row>
                 <Col>
-                    <h1 className="pb-4">Upload the Professor's Starting File for Assignment {2}</h1>
+                    <h1 className="pb-4">Upload the Professor's Starting File for Assignment {currentAssignment != null ? currentAssignment + 1 : "Loading..."}</h1>
                 </Col>
             </Row>
             <Row>
@@ -44,9 +51,9 @@ function Upload() {
                             verticalAlign: "baseline",
                             }}
                         >
-                            download Assignment {1}
+                            download Assignment {currentAssignment ?? "Loading..."}
                         </Button>{" "}
-                        before uploading Assignment {2}.
+                        before uploading Assignment {currentAssignment != null ? currentAssignment + 1 : "Loading..."}.
                     </WarningMessage>
                 </Col>
             </Row>

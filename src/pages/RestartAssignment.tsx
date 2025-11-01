@@ -2,9 +2,16 @@ import {Container, Row, Col} from "react-bootstrap";
 import TwoButtonRow from "../components/TwoButtonRow";
 import { useNavigate, Link } from "react-router-dom";
 import WarningMessage from "../components/WarningMessage";
+import { useAssignmentCounter } from "../hooks/useAssignmentCounter";
+import { useEffect } from "react";
 
 function RestartAssignment() {
     const navigate = useNavigate();
+    const {currentAssignment, loadAssignment} = useAssignmentCounter();
+
+    useEffect(() => {
+        loadAssignment();
+    }, []);
 
     return(
         <Container>
@@ -27,7 +34,7 @@ function RestartAssignment() {
             <Row>
                 <Col className="px-5">
                     <WarningMessage>
-                        Warning: if you restart, you will return to the starting file and lose all changes for Assignment {1}.
+                        Warning: if you restart, you will return to the starting file and lose all changes for Assignment {currentAssignment ?? "Loading..."}.
                         <br /><h6 className="pt-2"><i>This action cannot be undone</i></h6>
                     </WarningMessage>
                 </Col>

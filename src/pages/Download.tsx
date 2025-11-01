@@ -3,9 +3,16 @@ import Row from "react-bootstrap/esm/Row";
 import Col from "react-bootstrap/esm/Col";
 import TwoButtonRow from "../components/TwoButtonRow";
 import { useNavigate } from "react-router-dom";
+import { useAssignmentCounter } from "../hooks/useAssignmentCounter";
+import { useEffect } from "react";
 
 function Download() {
     const navigate = useNavigate();
+    const {currentAssignment, loadAssignment} = useAssignmentCounter();
+
+    useEffect(() => {
+        loadAssignment();
+    }, []);
 
     return(
         <Container>
@@ -21,7 +28,7 @@ function Download() {
             </Row>
             <Row>
                 <Col>
-                    <h1 className="pb-4">Download Assignment {1} and Submit it to Blackboard</h1>
+                    <h1 className="pb-4">Download Assignment {currentAssignment ?? "Loading..."} and Submit it to Blackboard</h1>
                 </Col>
             </Row>
             <Row>
