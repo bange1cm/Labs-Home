@@ -3,7 +3,7 @@
 //imports
 use serde::{Deserialize, Serialize}; //serde for serializing and deserializing json
 use std::{collections::HashMap}; //hashmap for storing activity log entries
-use tauri::{AppHandle};
+use tauri::AppHandle;
 use std::fs;
 use std::path::PathBuf;
 use tauri::Manager;

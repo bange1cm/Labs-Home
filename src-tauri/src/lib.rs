@@ -25,6 +25,7 @@ pub fn run() {
             assignment::increment_assignment,
             assignment::reset_assignment,
             qemu::launch_qemu,
+            qemu::is_qemu_running,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
