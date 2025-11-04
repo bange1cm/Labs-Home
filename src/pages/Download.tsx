@@ -2,17 +2,13 @@ import Container from "react-bootstrap/esm/Container";
 import Row from "react-bootstrap/esm/Row";
 import Col from "react-bootstrap/esm/Col";
 import TwoButtonRow from "../components/TwoButtonRow";
-import { useNavigate } from "react-router-dom";
-import { useAssignmentCounter } from "../hooks/useAssignmentCounter";
-import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDownloadAssignment } from "../hooks/useDownloadAssignment";
 
 function Download() {
     const navigate = useNavigate();
-    const {currentAssignment, loadAssignment} = useAssignmentCounter();
+    const {downloading, error, currentAssignment} = useDownloadAssignment();
 
-    useEffect(() => {
-        loadAssignment();
-    }, []);
 
     return(
         <Container>
@@ -26,27 +22,58 @@ function Download() {
                     </nav>
                 </Col>
             </Row>
-            <Row>
-                <Col>
-                    <h1 className="pb-4">Download Assignment {currentAssignment ?? "Loading..."} and Submit it to Blackboard</h1>
-                </Col>
-            </Row>
-            <Row>
-                <Col className="px-5 pb-5">
-                    <h6><i>Do not save the file within Labs@Home</i></h6>
-                </Col>
-            </Row>
-            <Row>
-                <Col className="pt-5">
-                    <TwoButtonRow 
-                    leftButtonText="Download"
-                    leftButtonOnClick={() => console.log("download")}
-                    rightButtonText="Cancel"
-                    rightButtonOnClick={() => navigate("/")}
-                    />
-                </Col>
-            </Row>
-        
+            <>{error ? (
+                <>
+                <Row>
+                    <Col>
+                    <h1 className="pb-4 text-danger">Failed to Download</h1>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <p className="px-5">
+                            There was an error trying to download assignment{" "}
+                            {currentAssignment ?? "?"}.  
+                            Please check the{" "}
+                            <Link to="/activity-log">Activity Log</Link> for more details.
+                        </p>
+                        <p className="px-5 text-muted small">
+                            Error details: <code>{error}</code>
+                        </p>
+                    </Col>
+                </Row>
+                <Row>
+                        <Col className="pt-5">
+                            <TwoButtonRow 
+                            rightButtonText="Dismiss"
+                            rightButtonOnClick={() => navigate("/")}
+                            />
+                        </Col>
+                    </Row>
+                </>
+            ) : downloading ? (
+                <Row>
+                    <Col>
+                        <h1 className="pb-4">Downloading Assignment {currentAssignment ?? "Loading..."}</h1>
+                    </Col>
+                </Row>
+            ) : (
+                <>
+                <Row>
+                    <Col>
+                        <h1 className="pb-4">Assignment {currentAssignment ?? "Loading..."} downloaded into your Downloads folder</h1>
+                    </Col>
+                </Row>
+                <Row>
+                            <Col className="pt-5">
+                                <TwoButtonRow 
+                                rightButtonText="Dismiss"
+                                rightButtonOnClick={() => navigate("/")}
+                                />
+                            </Col>
+                        </Row>
+                </>
+            )}</>
         </Container>
     );
 }

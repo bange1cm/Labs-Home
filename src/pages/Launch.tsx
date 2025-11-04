@@ -4,76 +4,12 @@ import Col from "react-bootstrap/esm/Col";
 import TwoButtonRow from "../components/TwoButtonRow";
 import { useNavigate, Link } from "react-router-dom";
 import LoginHintCard from "../components/LoginHintCard";
-import { useAssignmentCounter } from "../hooks/useAssignmentCounter";
-import { useActivityLog } from "../hooks/useActivityLog";
-import { useEffect, useState, useRef } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { useQemuLaunch } from "../hooks/useQemuLaunch";
 
 
 function Launch() {
     const navigate = useNavigate();
-    const {currentAssignment, loadAssignment} = useAssignmentCounter();
-    const { addActivity } = useActivityLog();
-    const [error, setError] = useState<string | null>(null);
-    const [launching, setLaunching] = useState(true);
-
-
-    const launchedRef = useRef(false);
-
-    useEffect(() => {
-        if (launchedRef.current) return; // guard against React StrictMode double-invoke in dev
-        launchedRef.current = true;
-
-        async function launchQemu() {
-            let loadedAssignment: number | null = null;
-            try {
-                // load assignment and capture the returned value so we can log it reliably
-                loadedAssignment = await loadAssignment();
-                await invoke("launch_qemu"); // call Rust backend command; returns immediately
-
-                // start a polling fallback in case events aren't delivered: call is_qemu_running
-                let pollHandle: number | null = null;
-                try {
-                    // wait a short moment for the launch to start
-                    await new Promise((r) => setTimeout(r, 500));
-                    pollHandle = window.setInterval(async () => {
-                        try {
-                            // call backend command
-                            // @ts-ignore - invoke typing
-                            const res = await invoke("is_qemu_running");
-                            // result may be boolean; coerce
-                            const running = !!res;
-                            if (!running) {
-                                setLaunching(false);
-                                // log activity - prefer the loaded value if available
-                                await addActivity(`Closed Assignment ${loadedAssignment ?? currentAssignment ?? "?"}`);
-                                if (pollHandle) {
-                                    clearInterval(pollHandle);
-                                    pollHandle = null;
-                                }
-                            }
-                        } catch (e) {
-                            //log error
-                            setError(String(e));
-                            await addActivity(`Error polling QEMU status: ${e}`);
-                        }
-                    }, 1000);
-                } catch (e) {
-                    setError(String(e));
-                    await addActivity(`Error setting up QEMU polling: ${e}`);
-                }
-
-            } catch (err: any) {
-                //log err 
-                setError(err?.message ?? err);
-                await addActivity(`Frontend error launching QEMU: ${err?.message ?? err}`);
-                setLaunching(false);
-            }
-        }
-
-        // start the launch (which starts polling after load)
-        launchQemu();
-    }, []);
+    const {launching, error, currentAssignment} = useQemuLaunch();
 
     return(
         <Container>
@@ -107,6 +43,14 @@ function Launch() {
                         </p>
                     </Col>
                 </Row>
+                <Row>
+                        <Col className="pt-5">
+                            <TwoButtonRow 
+                            rightButtonText="Dismiss"
+                            rightButtonOnClick={() => navigate("/")}
+                            />
+                        </Col>
+                    </Row>
                 </>
                 ) : launching ? (
                     <>
