@@ -27,6 +27,7 @@ pub fn run() {
             qemu::launch_qemu,
             qemu::is_qemu_running,
             files::download_assignment,
+            files::process_uploaded_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
