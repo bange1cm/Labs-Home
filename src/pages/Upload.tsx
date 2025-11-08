@@ -2,22 +2,44 @@ import Container from "react-bootstrap/esm/Container";
 import Row from "react-bootstrap/esm/Row";
 import Col from "react-bootstrap/esm/Col";
 import TwoButtonRow from "../components/TwoButtonRow";
-import { useNavigate } from "react-router-dom";
-import "../main.css";
 import WarningMessage from "../components/WarningMessage";
 import Button from "react-bootstrap/esm/Button";
 import FileUploadBox from "../components/FileUploadBox";
 import { useAssignmentCounter } from "../hooks/useAssignmentCounter";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+import { invoke } from "@tauri-apps/api/core"; 
+import { useNavigate } from "react-router-dom";
+import { useActivityLog } from "../hooks/useActivityLog";
+import "../main.css";
 
 
 function Upload() {
     const navigate = useNavigate();
     const {currentAssignment, loadAssignment} = useAssignmentCounter();
+    const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
+    const { addActivity } = useActivityLog();
 
     useEffect(() => {
         loadAssignment();
     }, []);
+
+    const handleUpload = async () => {
+        if (!selectedFilePath) {
+            alert("Please select a file first.");
+            return;
+        }
+
+        try {
+            await invoke("process_uploaded_file", {
+                filePath: selectedFilePath,
+                assignmentNumber: currentAssignment,
+            });
+            alert("File successfully copied and processed!");
+            navigate("/");
+        } catch (error) {
+            addActivity(`Failed to upload file: ${error}`);
+        }
+    };
 
     return(
         <Container>
@@ -64,12 +86,12 @@ function Upload() {
             </Row>
             <Row>
                 <Col className="px-5">
-                    <FileUploadBox />
+                    <FileUploadBox onFileSelect={setSelectedFilePath}/>
                 </Col>
             </Row>
             <TwoButtonRow
                 leftButtonText="Upload"
-                leftButtonOnClick={() => console.log("upload")}
+                leftButtonOnClick={handleUpload}
                 rightButtonText="Cancel"
                 rightButtonOnClick={() => navigate("/")}
                 />

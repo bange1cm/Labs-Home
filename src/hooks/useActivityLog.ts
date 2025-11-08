@@ -25,6 +25,10 @@ export function useActivityLog() {
     }
   };
 
+  //to use: 
+  //import { useActivityLog } from "../hooks/useActivityLog";
+  //const { addActivity } = useActivityLog();
+  // addActivity("description here")
   const addActivity = async (description: string) => {
     setLoading(true);
     try {

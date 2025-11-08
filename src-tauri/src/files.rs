@@ -62,7 +62,7 @@ pub fn download_assignment(app_handle: tauri::AppHandle) -> Result<(), String> {
 
 
 #[tauri::command]
-pub fn process_uploaded_file(file_name: String, file_bytes: Vec<u8>) -> Result<(), String> {
+pub fn process_uploaded_file(app_handle: tauri::AppHandle, file_path: String) -> Result<(), String> {
     // get current assignment
     let current_assignment = crate::assignment::get_assignment(app_handle.clone());
     let next_assignment = current_assignment + 1;
@@ -92,8 +92,29 @@ pub fn process_uploaded_file(file_name: String, file_bytes: Vec<u8>) -> Result<(
         .ok_or_else(|| "Failed to locate qemu_data directory".to_string())?;
 
 
-    //
+    //receive the file path 
+    let source_path = PathBuf::from(&file_path);
+    if !source_path.exists() {
+        return Err(format!("Source file not found: {}", file_path));
+    }
     
+    //destination path
+    let dest_dir = qemu_data_dir.join("drives").join("professor");
+    let dest_path = dest_dir.join(source_path.file_name().ok_or_else(|| "Invalid source file name".to_string())?);
 
+    // Copy file
+    fs::copy(&source_path, &dest_path)
+        .map_err(|e| format!("Failed to copy starting file: {}", e))?;
+
+    // Log success
+    let success_msg = format!("Successfully added starting file for Assignment {} in drives/professor", next_assignment);
+    let _ = crate::activity::add_activity(app_handle.clone(), success_msg.clone());
+    
+    // //increment assignment
+    // crate::assignment::increment_assignment(app_handle.clone());
+    // let increment_msg = format!("Incrementing to Assignment {}", next_assignment);
+    // let _ = crate::activity::add_activity(app_handle.clone(), increment_msg.clone());
+
+    Ok(())
 
 }
