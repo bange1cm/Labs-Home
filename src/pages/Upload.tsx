@@ -5,39 +5,24 @@ import TwoButtonRow from "../components/TwoButtonRow";
 import WarningMessage from "../components/WarningMessage";
 import Button from "react-bootstrap/esm/Button";
 import FileUploadBox from "../components/FileUploadBox";
-import { useAssignmentCounter } from "../hooks/useAssignmentCounter";
-import { useState, useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core"; 
-import { useNavigate } from "react-router-dom";
-import { useActivityLog } from "../hooks/useActivityLog";
+import { uploadAssignment } from "../hooks/uploadAssignment";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import "../main.css";
 
 
 function Upload() {
     const navigate = useNavigate();
-    const {currentAssignment, loadAssignment} = useAssignmentCounter();
-    const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
-    const { addActivity } = useActivityLog();
+    const [selectedFilePath, setSelectedFilePath] =  useState<string | null>(null);
+    const {upload, error, uploaded, currentAssignment} = uploadAssignment(selectedFilePath);
+    const [flag, setFlag] = useState(false);
 
-    useEffect(() => {
-        loadAssignment();
-    }, []);
-
-    const handleUpload = async () => {
+    const handleUpload = () => {
         if (!selectedFilePath) {
-            alert("Please select a file first.");
-            return;
+            setFlag(true);
         }
-
-        try {
-            await invoke("process_uploaded_file", {
-                filePath: selectedFilePath,
-                assignmentNumber: currentAssignment,
-            });
-            alert("File successfully copied and processed!");
-            navigate("/");
-        } catch (error) {
-            addActivity(`Failed to upload file: ${error}`);
+        else{
+            upload();
         }
     };
 
@@ -53,6 +38,53 @@ function Upload() {
                     </nav>
                 </Col>
             </Row>
+            <>{error ? (
+                <>
+                <Row>
+                    <Col>
+                    <h1 className="pb-4 text-danger">Failed to Upload</h1>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <p className="px-5">
+                            There was an error trying to upload assignment{" "}
+                            {currentAssignment != null ? currentAssignment + 1 : "Loading..."}. 
+                            Please check the{" "}
+                            <Link to="/activity-log">Activity Log</Link> for more details.
+                        </p>
+                        <p className="px-5 text-muted small">
+                            Error details: <code>{error}</code>
+                        </p>
+                    </Col>
+                </Row>
+                <Row>
+                        <Col className="pt-5">
+                            <TwoButtonRow 
+                            rightButtonText="Dismiss"
+                            rightButtonOnClick={() => navigate("/")}
+                            />
+                        </Col>
+                    </Row>
+                </>
+            ) : uploaded ? (
+                <>
+                <Row>
+                    <Col>
+                        <h1 className="pb-4">Uploaded Assignment {currentAssignment ?? "Loading..."}</h1>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col className="pt-5">
+                        <TwoButtonRow 
+                        rightButtonText="Dismiss"
+                        rightButtonOnClick={() => navigate("/")}
+                         />
+                     </Col>
+                </Row>
+                </>
+            ) : (
+            <>
             <Row>
                 <Col>
                     <h1 className="pb-4">Upload the Professor's Starting File for Assignment {currentAssignment != null ? currentAssignment + 1 : "Loading..."}</h1>
@@ -86,15 +118,25 @@ function Upload() {
             </Row>
             <Row>
                 <Col className="px-5">
-                    <FileUploadBox onFileSelect={setSelectedFilePath}/>
+                    <FileUploadBox onFileSelect={setSelectedFilePath} flag={flag} />
                 </Col>
             </Row>
-            <TwoButtonRow
+            {flag ? (
+            <Row>
+                <Col className="px-5" style={{color: "red", fontWeight: "bold", fontSize: "1.1rem"}}>
+                    No file selected. Please select a file to upload.
+                </Col>
+            </Row>
+            ) : null}
+            <div className="px-5">
+            <TwoButtonRow 
                 leftButtonText="Upload"
                 leftButtonOnClick={handleUpload}
                 rightButtonText="Cancel"
                 rightButtonOnClick={() => navigate("/")}
                 />
+            </div>
+            </>)}</>
         </Container>
        
        

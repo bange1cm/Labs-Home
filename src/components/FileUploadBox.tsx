@@ -6,9 +6,10 @@ import "./FileUploadBox.css";
 
 interface FileUploadBoxProps {
   onFileSelect: (filePath: string | null) => void;
+  flag: boolean;
 }
 
-const FileUploadBox: React.FC<FileUploadBoxProps> = ({ onFileSelect }) => {
+const FileUploadBox: React.FC<FileUploadBoxProps> = ({ onFileSelect, flag}) => {
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
 
   const handleSelectFile = async () => {
@@ -20,6 +21,7 @@ const FileUploadBox: React.FC<FileUploadBoxProps> = ({ onFileSelect }) => {
     if (typeof selected === "string") {
       setSelectedPath(selected);
       onFileSelect(selected);
+      
     }
   };
 
@@ -27,7 +29,7 @@ const FileUploadBox: React.FC<FileUploadBoxProps> = ({ onFileSelect }) => {
      <Card
       className="p-4 text-center mb-4"
       style={{
-        border: "2px solid var(--bs-primary)",
+        border: flag ? "2px solid red" : "2px solid #A9B2BA",
         backgroundColor: "rgba(13, 110, 253, 0.05)",
         borderRadius: "1rem",
       }}
