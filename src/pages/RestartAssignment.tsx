@@ -4,10 +4,12 @@ import { useNavigate, Link } from "react-router-dom";
 import WarningMessage from "../components/WarningMessage";
 import { useAssignmentCounter } from "../hooks/useAssignmentCounter";
 import { useEffect } from "react";
+import { restartAssignment } from "../hooks/restartAssignment";
 
 function RestartAssignment() {
     const navigate = useNavigate();
     const {currentAssignment, loadAssignment} = useAssignmentCounter();
+    const {restarted, error, restart} = restartAssignment();
 
     useEffect(() => {
         loadAssignment();
@@ -26,6 +28,53 @@ function RestartAssignment() {
                     </nav>
                 </Col>
             </Row>
+            <>{error ? (
+                <>
+                <Row>
+                    <Col>
+                    <h1 className="pb-4 text-danger">Failed to Restart Assignment</h1>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <p className="px-5">
+                            There was an error trying to restart assignment{" "}
+                            {currentAssignment ?? "Loading..."}. 
+                            Please check the{" "}
+                            <Link to="/activity-log">Activity Log</Link> for more details.
+                        </p>
+                        <p className="px-5 text-muted small">
+                            Error details: <code>{error}</code>
+                        </p>
+                    </Col>
+                </Row>
+                <Row>
+                        <Col className="pt-5">
+                            <TwoButtonRow 
+                            rightButtonText="Dismiss"
+                            rightButtonOnClick={() => navigate("/")}
+                            />
+                        </Col>
+                    </Row>
+                </>
+            ) : restarted ? (
+                <>
+                <Row>
+                    <Col>
+                        <h1 className="pb-4">Successfully Restarted Assignment {currentAssignment ?? "Loading..."}</h1>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col className="pt-5">
+                        <TwoButtonRow 
+                        rightButtonText="Dismiss"
+                        rightButtonOnClick={() => navigate("/")}
+                         />
+                     </Col>
+                </Row>
+                </>
+            ) : (
+            <>
             <Row>
                 <Col>
                     <h1 className="pb-4">Restart Assignment {1}</h1>
@@ -43,15 +92,16 @@ function RestartAssignment() {
                 <Col className="pt-5 px-5">
                 <TwoButtonRow 
                 leftButtonText="Restart"
-                leftButtonOnClick={() => console.log("restart")}
+                leftButtonOnClick={restart}
                 rightButtonText="Cancel"
                 rightButtonOnClick={() => navigate("/help")}
                 />
                 </Col>
             </Row>
+            </>
+            )}
+            </>
         </Container>
-       
-       
     );
 }
 

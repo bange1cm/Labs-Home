@@ -13,6 +13,7 @@ export function uploadAssignment(selectedFilePath: string | null) {
     async function upload() {
         try {
             await loadAssignment();
+            addActivity(`Starting upload for Assignment ${currentAssignment != null ? currentAssignment + 1 : "?"}`);
             await invoke("process_uploaded_file", {
                 filePath: selectedFilePath,
                 assignmentNumber: currentAssignment,

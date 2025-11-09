@@ -7,15 +7,18 @@ import Button from "react-bootstrap/esm/Button";
 import FileUploadBox from "../components/FileUploadBox";
 import { uploadAssignment } from "../hooks/uploadAssignment";
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../main.css";
+import { useAssignmentCounter } from "../hooks/useAssignmentCounter";
 
 
 function Upload() {
     const navigate = useNavigate();
+    const {currentAssignment, loadAssignment} = useAssignmentCounter();
     const [selectedFilePath, setSelectedFilePath] =  useState<string | null>(null);
-    const {upload, error, uploaded, currentAssignment} = uploadAssignment(selectedFilePath);
+    const {upload, error, uploaded} = uploadAssignment(selectedFilePath);
     const [flag, setFlag] = useState(false);
+
 
     const handleUpload = () => {
         if (!selectedFilePath) {
@@ -25,6 +28,10 @@ function Upload() {
             upload();
         }
     };
+
+    useEffect(() => {
+        loadAssignment();
+    }, []);
 
     return(
         <Container>
@@ -71,7 +78,7 @@ function Upload() {
                 <>
                 <Row>
                     <Col>
-                        <h1 className="pb-4">Uploaded Assignment {currentAssignment ?? "Loading..."}</h1>
+                        <h1 className="pb-4">Successfully Uploaded Assignment {currentAssignment ?? "Loading..."}</h1>
                     </Col>
                 </Row>
                 <Row>

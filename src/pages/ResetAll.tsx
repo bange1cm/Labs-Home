@@ -2,9 +2,11 @@ import {Container, Row, Col} from "react-bootstrap";
 import TwoButtonRow from "../components/TwoButtonRow";
 import { useNavigate, Link } from "react-router-dom";
 import WarningMessage from "../components/WarningMessage";
+import { resetAll } from "../hooks/resetAll";
 
 function ResetAll() {
     const navigate = useNavigate();
+    const { reseted, error, reset } = resetAll();
 
     return(
         <Container>
@@ -19,6 +21,52 @@ function ResetAll() {
                     </nav>
                 </Col>
             </Row>
+             <>{error ? (
+                <>
+                <Row>
+                    <Col>
+                    <h1 className="pb-4 text-danger">Failed to Reset Labs@Home</h1>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <p className="px-5">
+                            There was an error trying to reset Labs@Home. 
+                            Please check the{" "}
+                            <Link to="/activity-log">Activity Log</Link> for more details.
+                        </p>
+                        <p className="px-5 text-muted small">
+                            Error details: <code>{error}</code>
+                        </p>
+                    </Col>
+                </Row>
+                <Row>
+                        <Col className="pt-5">
+                            <TwoButtonRow 
+                            rightButtonText="Dismiss"
+                            rightButtonOnClick={() => navigate("/")}
+                            />
+                        </Col>
+                    </Row>
+                </>
+            ) : reseted ? (
+                <>
+                <Row>
+                    <Col>
+                        <h1 className="pb-4">Successfully Reset Labs@Home</h1>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col className="pt-5">
+                        <TwoButtonRow 
+                        rightButtonText="Dismiss"
+                        rightButtonOnClick={() => navigate("/")}
+                         />
+                     </Col>
+                </Row>
+                </>
+            ) : (
+            <>
             <Row>
                 <Col>
                     <h1 className="pb-4">Reset Labs@Home</h1>
@@ -50,12 +98,15 @@ function ResetAll() {
                 <Col className="px-5">
                 <TwoButtonRow 
                 leftButtonText="Reset"
-                leftButtonOnClick={() => console.log("reset")}
+                leftButtonOnClick={() => reset()}
                 rightButtonText="Cancel"
                 rightButtonOnClick={() => navigate("/help")}
                 />
                 </Col>
             </Row>
+            </>
+            )}
+            </>
         </Container>
        
        

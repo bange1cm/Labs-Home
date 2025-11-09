@@ -27,8 +27,8 @@ fn qemu_data_dir(app_handle: &tauri::AppHandle) -> Result<PathBuf, String> {
 
 //Private helper: create new overlay file
 fn create_overlay_file(qemu_data_dir: &PathBuf, overlay_name: &str)-> Result<(), String> {
-    let base_path = qemu_data_dir.join("base").join("base.qcow2");
-    let overlay_path = qemu_data_dir.join("overlay").join(overlay_name);
+    let base_path = qemu_data_dir.join("drives").join("base").join("base.qcow2");
+    let overlay_path = qemu_data_dir.join("drives").join("overlay").join(overlay_name);
 
     let status_create = Command::new("qemu-img")
         .arg("create")
@@ -55,10 +55,6 @@ pub fn download_assignment(app_handle: tauri::AppHandle) -> Result<(), String> {
     // get current assignment
     let current_assignment = crate::assignment::get_assignment(app_handle.clone());
 
-    // log attempt
-    let attempt_msg = format!("Attempting to download Assignment {}", current_assignment);
-    let _ = crate::activity::add_activity(app_handle.clone(), attempt_msg.clone());
-
     // Discover qemu_data folder: resource_dir, exe parents, cwd
     let qemu_data_dir = qemu_data_dir(&app_handle)?;
 
@@ -84,10 +80,6 @@ pub fn download_assignment(app_handle: tauri::AppHandle) -> Result<(), String> {
     std::fs::copy(&overlay_path, &dest_path)
         .map_err(|e| format!("Failed to copy overlay file: {}", e))?;
 
-    // Log success
-    let success_msg = format!("Successfully downloaded Assignment {} to Downloads folder", current_assignment);
-    let _ = crate::activity::add_activity(app_handle.clone(), success_msg.clone());
-
     Ok(())
 }
 
@@ -98,16 +90,12 @@ pub fn process_uploaded_file(app_handle: tauri::AppHandle, file_path: String) ->
     let current_assignment = crate::assignment::get_assignment(app_handle.clone());
     let next_assignment = current_assignment + 1;
 
-    // log attempt
-    let attempt_msg = format!("Attempting to Upload Assignment {} Starting File", next_assignment);
-    let _ = crate::activity::add_activity(app_handle.clone(), attempt_msg.clone());
-
     // Get qemu_data directory
     let qemu_data_dir = qemu_data_dir(&app_handle)?;
 
     let professor_dir = qemu_data_dir.join("drives").join("professor");
 
-    let base_path = qemu_data_dir.join("base").join("base.qcow2");
+    let base_path = qemu_data_dir.join("drives").join("base").join("base.qcow2");
 
     //receive the file path 
     let source_path = PathBuf::from(&file_path);
@@ -121,10 +109,6 @@ pub fn process_uploaded_file(app_handle: tauri::AppHandle, file_path: String) ->
     //copy file
     fs::copy(&source_path, &professor_path)
         .map_err(|e| format!("Failed to copy starting file: {}", e))?;
-
-    // Log success
-    let success_msg = format!("Added starting file for Assignment {} in drives/professor", next_assignment);
-    let _ = crate::activity::add_activity(app_handle.clone(), success_msg.clone());
 
     // Rebase using qemu-img
     let status_rebase = Command::new("qemu-img")
@@ -155,14 +139,9 @@ pub fn process_uploaded_file(app_handle: tauri::AppHandle, file_path: String) ->
     //make a new overlay file for the next assignment
     let new_overlay_name = format!("overlay_a{}.qcow2", next_assignment);
     create_overlay_file(&qemu_data_dir, &new_overlay_name)?; 
-    let create_msg = format!("Created new overlay file for Assignment {}", next_assignment);
-    let _ = crate::activity::add_activity(app_handle.clone(), create_msg.clone());
 
     //increment assignment
     crate::assignment::increment_assignment(app_handle.clone());
-    let increment_msg = format!("Assigment {} completed the upload process successfully.", next_assignment);
-    let _ = crate::activity::add_activity(app_handle.clone(), increment_msg.clone());
-
 
     Ok(())
 
@@ -174,16 +153,13 @@ pub fn restart_assignment(app_handle: tauri::AppHandle) -> Result<(), String> {
     // get current assignment
     let current_assignment = crate::assignment::get_assignment(app_handle.clone());
 
-    // log attempt
-    let attempt_msg = format!("Attempting to restart Assignment {}", current_assignment);
-    let _ = crate::activity::add_activity(app_handle.clone(), attempt_msg.clone());
-
     // Get qemu_data directory
     let qemu_data_dir = qemu_data_dir(&app_handle)?;
 
     // overlay filename and full path
     let overlay_name = format!("overlay_a{}.qcow2", current_assignment);
     let overlay_path = qemu_data_dir
+        .join("drives")
         .join("overlay")
         .join(overlay_name);
 
@@ -191,28 +167,24 @@ pub fn restart_assignment(app_handle: tauri::AppHandle) -> Result<(), String> {
     if overlay_path.exists() {
         std::fs::remove_file(&overlay_path).map_err(|e| {format!("Failed to remove overlay file for Assignment {} with error: {}", current_assignment, e)})?;
     }
+    else{
+        return Err(format!("Overlay file for Assignment {} does not exist at: {}", current_assignment, overlay_path.display()));
+    }
 
     // Create a new overlay file based on the base image
     let overlay_name = format!("overlay_a{}.qcow2", current_assignment);
     create_overlay_file(&qemu_data_dir, &overlay_name)?;
-
-    let success_msg = format!("Successfully restarted Assignment {}", current_assignment);
-    let _ = crate::activity::add_activity(app_handle.clone(), success_msg.clone());
 
     Ok(())
 }
 
 #[tauri::command]
 pub fn reset_all_data(app_handle: tauri::AppHandle) -> Result<(), String> {
-    // log attempt
-    let attempt_msg = "Attempting to reset all qemu data".to_string();
-    let _ = crate::activity::add_activity(app_handle.clone(), attempt_msg.clone());
-
     // Get qemu_data directory
     let qemu_data_dir = qemu_data_dir(&app_handle)?;
 
     // Remove overlay directory
-    let overlay_dir = qemu_data_dir.join("overlay");
+    let overlay_dir = qemu_data_dir.join("drives").join("overlay");
     if overlay_dir.exists() {
         std::fs::remove_dir_all(&overlay_dir).map_err(|e| {format!("Failed to remove overlay directory with error: {}", e)})?;
     }
@@ -226,8 +198,8 @@ pub fn reset_all_data(app_handle: tauri::AppHandle) -> Result<(), String> {
     std::fs::create_dir_all(&professor_dir).map_err(|e| {format!("Failed to create professor directory with error: {}", e)})?;
 
     // Reset base image
-    let base_path = qemu_data_dir.join("base").join("base.qcow2");
-    let original_base_path = qemu_data_dir.join("base").join("base_original.qcow2");
+    let base_path = qemu_data_dir.join("drives").join("base").join("base.qcow2");
+    let original_base_path = qemu_data_dir.join("drives").join("base").join("base_original.qcow2");
     if original_base_path.exists() {
         std::fs::copy(&original_base_path, &base_path).map_err(|e| {format!("Failed to copy base image with error: {}", e)})?;
     } else {
@@ -237,8 +209,9 @@ pub fn reset_all_data(app_handle: tauri::AppHandle) -> Result<(), String> {
     // Reset assignment counter to 1
     crate::assignment::reset_assignment(app_handle.clone());
 
-    let success_msg = "Successfully reset all qemu data".to_string();
-    let _ = crate::activity::add_activity(app_handle.clone(), success_msg.clone());
+    //create overlay for assignment 1
+    let overlay_name = format!("overlay_a1.qcow2");
+    create_overlay_file(&qemu_data_dir, &overlay_name)?;
 
     Ok(())
 }
