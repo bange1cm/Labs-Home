@@ -18,6 +18,7 @@ mod qemu;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![ 
             activity::load_log,
             activity::add_activity,
@@ -27,6 +28,9 @@ pub fn run() {
             qemu::launch_qemu,
             qemu::is_qemu_running,
             files::download_assignment,
+            files::process_uploaded_file,
+            files::restart_assignment,
+            files::reset_all_data
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
