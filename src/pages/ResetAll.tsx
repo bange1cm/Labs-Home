@@ -47,7 +47,7 @@ function ResetAll() {
                 </Col>
             </Row>
             <Row>
-                <Col>
+                <Col className="px-5">
                 <TwoButtonRow 
                 leftButtonText="Reset"
                 leftButtonOnClick={() => console.log("reset")}

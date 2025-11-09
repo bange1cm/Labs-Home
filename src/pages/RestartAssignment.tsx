@@ -40,7 +40,7 @@ function RestartAssignment() {
                 </Col>
             </Row>
             <Row>
-                <Col className="pt-5">
+                <Col className="pt-5 px-5">
                 <TwoButtonRow 
                 leftButtonText="Restart"
                 leftButtonOnClick={() => console.log("restart")}
