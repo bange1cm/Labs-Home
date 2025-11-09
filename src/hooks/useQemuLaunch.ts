@@ -18,11 +18,11 @@ export function useQemuLaunch() {
     launchedRef.current = true;
 
     async function launchQemu() {
-      let loadedAssignment: number | null = null;
+      let assignment: number | null = null;
 
       try {
         // Load assignment and save the result for activity logging
-        loadedAssignment = await loadAssignment();
+        assignment = await loadAssignment();
         await invoke("launch_qemu");
 
         // Poll backend periodically to detect when QEMU closes
@@ -40,7 +40,7 @@ export function useQemuLaunch() {
               if (!running) {
                 setLaunching(false);
                 await addActivity(
-                  `Closed Assignment ${loadedAssignment ?? currentAssignment ?? "?"}`
+                  `Closed Assignment ${assignment ?? currentAssignment ?? "?"}`
                 );
                 if (pollHandle) {
                   clearInterval(pollHandle);

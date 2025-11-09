@@ -14,17 +14,18 @@ export function useDownloadAssignment() {
     useEffect(() => {
         if (launchedRef.current) return; // guard against StrictMode double invoke
         launchedRef.current = true;
+        let assignment: number | null = null;
 
         async function downloadAssignment() {
             setDownloading(true);
             try {
-                await loadAssignment();
-                addActivity(`Attempting to download Assignment ${currentAssignment}`);
+                const assignment = await loadAssignment();
+                addActivity(`Attempting to download Assignment ${assignment}`);
                 await invoke("download_assignment");
-                addActivity(`Successfully downloaded Assignment ${currentAssignment} to Downloads folder`);
+                addActivity(`Successfully downloaded Assignment ${assignment} to Downloads folder`);
             } catch (e) {
                 setError(String(e));
-                addActivity(`Failed to download Assignment ${currentAssignment}: ${String(e)}`);
+                addActivity(`Failed to download Assignment ${assignment}: ${String(e)}`);
             } finally{
                 setDownloading(false);
             }

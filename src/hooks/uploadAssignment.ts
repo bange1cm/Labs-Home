@@ -9,20 +9,21 @@ export function uploadAssignment(selectedFilePath: string | null) {
     const [uploaded, setUploaded] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { addActivity } = useActivityLog();
+    let assignment : number | null = null;
 
     async function upload() {
         try {
-            await loadAssignment();
-            addActivity(`Starting upload for Assignment ${currentAssignment != null ? currentAssignment + 1 : "?"}`);
+        assignment = await loadAssignment();
+            addActivity(`Starting upload for Assignment ${assignment != null ? assignment + 1 : "?"}`);
             await invoke("process_uploaded_file", {
                 filePath: selectedFilePath,
-                assignmentNumber: currentAssignment,
+                assignmentNumber: assignment,
             });
             setUploaded(true);
-            addActivity(`Successfully uploaded file for Assignment ${currentAssignment}`);
+            addActivity(`Successfully uploaded file for Assignment ${assignment != null ? assignment + 1 : "?"}`);
         } catch (error) {
             setError(String(error));
-            addActivity(`Failed to upload file: ${String(error)}`);
+            addActivity(`Failed to upload file for Assignment ${assignment != null ? assignment + 1 : "?"}: ${String(error)}`);
         }
     }
 

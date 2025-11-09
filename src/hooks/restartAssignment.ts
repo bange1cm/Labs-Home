@@ -10,17 +10,18 @@ export function restartAssignment() {
     const [restarted, setRestarted] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { addActivity } = useActivityLog();
+    let assignment: number | null = null;
 
     async function restart() {
         try {
-            await loadAssignment();
-            addActivity(`Attempting to restart Assignment ${currentAssignment}`);
+            assignment = await loadAssignment();
+            addActivity(`Attempting to restart Assignment ${assignment}`);
             await invoke("restart_assignment");
             setRestarted(true);
-            addActivity(`Successfully restarted Assignment ${currentAssignment}`);
+            addActivity(`Successfully restarted Assignment ${assignment}`);
         } catch (error) {
             setError(String(error));
-            addActivity(`Failed to restart Assignment ${currentAssignment}: ${String(error)}`);
+            addActivity(`Failed to restart Assignment ${assignment}: ${String(error)}`);
         }
     }
 
