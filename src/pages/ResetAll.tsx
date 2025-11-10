@@ -3,10 +3,19 @@ import TwoButtonRow from "../components/TwoButtonRow";
 import { useNavigate, Link } from "react-router-dom";
 import WarningMessage from "../components/WarningMessage";
 import { resetAll } from "../hooks/resetAll";
+import {useState} from "react";
 
 function ResetAll() {
     const navigate = useNavigate();
     const { reseted, error, reset } = resetAll();
+    const[loading, setLoading] = useState(false); 
+    
+    const handleReset = () => {
+        setLoading(true);
+        reset();
+    }
+
+
 
     return(
         <Container>
@@ -94,16 +103,16 @@ function ResetAll() {
                     </ul>
                 </Col>
             </Row>
-            <Row>
+            {!loading ? (<Row>
                 <Col className="px-5 pt-4">
                 <TwoButtonRow 
                 leftButtonText="Reset"
-                leftButtonOnClick={() => reset()}
+                leftButtonOnClick={() => handleReset()}
                 rightButtonText="Cancel"
                 rightButtonOnClick={() => navigate("/help")}
                 />
                 </Col>
-            </Row>
+            </Row>) : null}
             </>
             )}
             </>
