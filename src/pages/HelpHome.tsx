@@ -23,10 +23,10 @@ function HelpHome() {
             <Row><h1><LinkButton onClick={() => navigate("/restart-assignment")}>Restart Current Assignment</LinkButton></h1></Row>
             <Row><h1><LinkButton onClick={() => navigate("/reset-all")}>Reset Labs@Home</LinkButton></h1></Row>
             <Row><h1><LinkButton onClick={() => navigate("/more-help")}>Need More Help?</LinkButton></h1></Row>
-            <TwoButtonRow
+            <Row className="pt-5 px-5"><TwoButtonRow
                 rightButtonText="Dismiss"
                 rightButtonOnClick={() => navigate("/")}
-                />
+                /></Row>
         </Container>
     );
 }

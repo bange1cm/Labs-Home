@@ -6,7 +6,7 @@ import { useActivityLog } from "./useActivityLog";
 
 //not actually a hook because it will be called via a button click not on render
 export function restartAssignment() {
-    const { currentAssignment, loadAssignment } = useAssignmentCounter();
+    const { loadAssignment } = useAssignmentCounter();
     const [restarted, setRestarted] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { addActivity } = useActivityLog();
@@ -26,5 +26,5 @@ export function restartAssignment() {
     }
 
 
-    return {restarted, error, restart, currentAssignment };
+    return {restarted, error, restart };
 }

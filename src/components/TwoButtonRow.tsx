@@ -55,17 +55,17 @@ const TwoButtonRow: React.FC<TwoButtonRowProps> = ({
   rightButtonOnClick,
 }) => {
   return (
-    <Row className="py-5 gx-3"> {/* gx-3 adds spacing between buttons */}
+    <Row className="py-3 gx-3"> {/* gx-3 adds spacing between buttons */}
       {leftButtonText && (
         <Col xs="auto">
-          <Button size="lg" variant="primary" onClick={leftButtonOnClick}>
+          <Button variant="primary" onClick={leftButtonOnClick}>
             {leftButtonText}
           </Button>
         </Col>
       )}
 
       <Col xs="auto">
-        <Button size="lg" variant="secondary" onClick={rightButtonOnClick}>
+        <Button variant="secondary" onClick={rightButtonOnClick}>
           {rightButtonText}
         </Button>
       </Col>

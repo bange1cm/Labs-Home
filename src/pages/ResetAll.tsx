@@ -95,7 +95,7 @@ function ResetAll() {
                 </Col>
             </Row>
             <Row>
-                <Col className="px-5">
+                <Col className="px-5 pt-4">
                 <TwoButtonRow 
                 leftButtonText="Reset"
                 leftButtonOnClick={() => reset()}

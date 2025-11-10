@@ -43,7 +43,7 @@ function Download() {
                     </Col>
                 </Row>
                 <Row>
-                        <Col className="pt-5">
+                        <Col className="pt-5 px-5">
                             <TwoButtonRow 
                             rightButtonText="Dismiss"
                             rightButtonOnClick={() => navigate("/")}
@@ -61,17 +61,27 @@ function Download() {
                 <>
                 <Row>
                     <Col>
-                        <h1 className="pb-4">Assignment {currentAssignment ?? "Loading..."} downloaded into your Downloads folder</h1>
+                        <h1 className="pb-4">Assignment {currentAssignment ?? "Loading..."} downloaded</h1>
                     </Col>
                 </Row>
                 <Row>
-                            <Col className="pt-5">
-                                <TwoButtonRow 
-                                rightButtonText="Dismiss"
-                                rightButtonOnClick={() => navigate("/")}
-                                />
-                            </Col>
-                        </Row>
+                    <Col className="px-5">
+                        <h6 style={{fontSize: "1.25rem"}}>
+                            The assignment file is in your Downloads folder.
+                        </h6>
+                        <h6 style={{fontSize: "1.25rem"}}>
+                            You can now <Link to="/upload">upload the starting file</Link> for Assignment {currentAssignment != null ? currentAssignment + 1 : "Loading..."}.
+                        </h6>
+                    </Col>
+                </Row>
+                <Row>
+                     <Col className="pt-5 px-5">
+                        <TwoButtonRow 
+                            rightButtonText="Dismiss"
+                            rightButtonOnClick={() => navigate("/")}
+                         />
+                    </Col>
+                </Row>
                 </>
             )}</>
         </Container>

@@ -30,7 +30,7 @@ function MoreHelp() {
                 </Col>
             </Row>
             <Row>
-                <Col className="px-5">
+                <Col className="px-5 pt-5">
                 <TwoButtonRow 
                 rightButtonText="Dismiss"
                 rightButtonOnClick={() => navigate("/help")}

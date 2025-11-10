@@ -11,7 +11,7 @@ const Header = () => {
         <Container fluid>
             <Row className='align-items-center border-bottom py-4 mb-4 border-3' style={{ borderColor: "#666666" }}>
                 <Col>
-                    <h1 style={{lineHeight: "2rem" }}><a href='/' style={{ color: "#212529bf", textDecoration: "none" }}>Labs@Home</a></h1>
+                    <h1 style={{lineHeight: "2rem", fontSize: "2.2rem"}}><a href='/' style={{ color: "#212529bf", textDecoration: "none" }}>Labs@Home</a></h1>
                 </Col>
                 <Col>
                     <Button

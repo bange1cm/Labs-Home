@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
 import { open } from '@tauri-apps/plugin-dialog';
-import "./FileUploadBox.css"; 
 
 interface FileUploadBoxProps {
   onFileSelect: (filePath: string | null) => void;
@@ -34,7 +33,7 @@ const FileUploadBox: React.FC<FileUploadBoxProps> = ({ onFileSelect, flag}) => {
         borderRadius: "1rem",
       }}
     >
-      <p className="fw-semibold mb-3" style={{ fontSize: "1.1rem" }}>
+      <p className="mb-3" style={{ fontSize: "1rem" }}>
         {selectedPath
           ? `File selected:\n${selectedPath}`
           : "Select a .qcow2 image file"}

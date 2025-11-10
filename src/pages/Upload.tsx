@@ -78,11 +78,18 @@ function Upload() {
                 <>
                 <Row>
                     <Col>
-                        <h1 className="pb-4">Successfully Uploaded Assignment {currentAssignment ?? "Loading..."}</h1>
+                        <h1 className="pb-4">Successfully Uploaded Assignment {currentAssignment != null ? currentAssignment + 1 : "Loading..."}</h1>
                     </Col>
                 </Row>
                 <Row>
-                    <Col className="pt-5">
+                    <Col className="px-5">
+                        <h6 style={{fontSize: "1.25rem"}}>
+                            You can now <Link to="/launch">launch Assignment {currentAssignment != null ? currentAssignment + 1 : "Loading..."}</Link>.
+                        </h6>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col className="pt-5 px-5">
                         <TwoButtonRow 
                         rightButtonText="Dismiss"
                         rightButtonOnClick={() => navigate("/")}
@@ -115,12 +122,8 @@ function Upload() {
                             download Assignment {currentAssignment ?? "Loading..."}
                         </Button>{" "}
                         before uploading Assignment {currentAssignment != null ? currentAssignment + 1 : "Loading..."}.
+                        <br /> <h6 className="pt-3"><i>Files must be uploaded in the order provided by the professor</i></h6>
                     </WarningMessage>
-                </Col>
-            </Row>
-            <Row>
-                <Col className="px-5 pb-4">
-                    <h6><i>Files must be uploaded in the order provided by the professor</i></h6>
                 </Col>
             </Row>
             <Row>

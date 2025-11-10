@@ -77,7 +77,7 @@ function RestartAssignment() {
             <>
             <Row>
                 <Col>
-                    <h1 className="pb-4">Restart Assignment {1}</h1>
+                    <h1 className="pb-4">Restart Assignment {currentAssignment}</h1>
                 </Col>
             </Row>
             <Row>

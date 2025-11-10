@@ -18,7 +18,7 @@ const WarningMessage: React.FC<WarningMessageProps> = ({ children }) => {
         className="bi bi-exclamation-triangle-fill"
         style={{
           color: "var(--warning-orange)",
-          fontSize: "1.5rem",
+          fontSize: "1.25rem",
           flexShrink: 0,
           marginRight: "0.2rem",
         }}

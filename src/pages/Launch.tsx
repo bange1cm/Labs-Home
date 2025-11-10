@@ -83,7 +83,14 @@ function Launch() {
                         </Col>
                     </Row>
                     <Row>
-                        <Col className="pt-5">
+                    <Col className="px-5">
+                        <h6 style={{fontSize: "1.25rem"}}>
+                            If finished, you can <Link to="/download">download Assignment {currentAssignment ?? "Loading..."}</Link>.
+                        </h6>
+                    </Col>
+                </Row>
+                    <Row className="pt-5">
+                        <Col className="pt-5 px-5">
                             <TwoButtonRow 
                             rightButtonText="Dismiss"
                             rightButtonOnClick={() => navigate("/")}
