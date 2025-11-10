@@ -25,7 +25,7 @@ function WorkExplanation() {
             </Row>
             <Row>
                 <Col className="px-5">
-                    <h3>Qemu</h3>
+                    <h3>QEMU</h3>
                     <p>QEMU is a program that lets you run virtual computers (called virtual machines) on your own computer. 
                         When you launch an Assignment through Labs@Home, you are using a Debian virtual machine powered by QEMU.
                         This virtual machine acts like its own system with its own hard drive, even though that “hard drive” is actually just a file on your own computer. 

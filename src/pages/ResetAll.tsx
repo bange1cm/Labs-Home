@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import WarningMessage from "../components/WarningMessage";
 import { resetAll } from "../hooks/resetAll";
 import {useState} from "react";
+import Spinner from "react-bootstrap/Spinner";
 
 function ResetAll() {
     const navigate = useNavigate();
@@ -66,7 +67,14 @@ function ResetAll() {
                     </Col>
                 </Row>
                 <Row>
-                    <Col className="pt-5">
+                    <Col className="px-5">
+                        <h6 style={{fontSize: "1.25rem"}}>
+                            Labs@Home has been reset to Assignment 1.   
+                        </h6>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col className="pt-5 px-5">
                         <TwoButtonRow 
                         rightButtonText="Dismiss"
                         rightButtonOnClick={() => navigate("/")}
@@ -85,7 +93,7 @@ function ResetAll() {
                 <Col className="px-5">
                     <WarningMessage>
                         Warning: if you reset, you will lose all changes made in Labs@Home.
-                        <br />  All starting files and assignment work will be deleted.
+                        <br />  ALL starting files and assignment work will be deleted.
                         <br /><h6 className="pt-2"><i>This action cannot be undone</i></h6>
                     </WarningMessage>
                 </Col>
@@ -112,7 +120,12 @@ function ResetAll() {
                 rightButtonOnClick={() => navigate("/help")}
                 />
                 </Col>
-            </Row>) : null}
+            </Row>) : (
+            <Row>
+                <Col className="px-5 pt-4">
+                    <Spinner animation="border" variant="primary" role="status" className="mt-4"><span className="visually-hidden">Loading...</span></Spinner>
+                </Col>
+            </Row>)}
             </>
             )}
             </>
