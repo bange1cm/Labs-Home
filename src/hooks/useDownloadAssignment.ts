@@ -20,12 +20,12 @@ export function useDownloadAssignment() {
             setDownloading(true);
             try {
                 const assignment = await loadAssignment();
-                addActivity(`Attempting to download Assignment ${assignment}`);
+                addActivity(`Attempting to save Assignment ${assignment}`);
                 await invoke("download_assignment");
-                addActivity(`Successfully downloaded Assignment ${assignment} to Downloads folder`);
+                addActivity(`Successfully saved Assignment ${assignment} to Downloads folder`);
             } catch (e) {
                 setError(String(e));
-                addActivity(`Failed to download Assignment ${assignment}: ${String(e)}`);
+                addActivity(`Failed to save Assignment ${assignment}: ${String(e)}`);
             } finally{
                 setDownloading(false);
             }

@@ -85,7 +85,7 @@ function Launch() {
                     <Row>
                     <Col className="px-5">
                         <h6 style={{fontSize: "1.25rem"}}>
-                            If finished, you can <Link to="/download">download Assignment {currentAssignment ?? "Loading..."}</Link>.
+                            If finished, you can <Link to="/download">save Assignment{currentAssignment ?? "Loading..."}</Link> in your Downloads folder.
                         </h6>
                     </Col>
                 </Row>

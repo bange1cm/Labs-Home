@@ -40,7 +40,7 @@ function Upload() {
                     <nav aria-label="breadcrumb">
                         <ol className="breadcrumb">
                             <li className="breadcrumb-item"><a href="/">Home</a></li>
-                            <li className="breadcrumb-item active" aria-current="page">Upload Starting File</li>
+                            <li className="breadcrumb-item active" aria-current="page">Upload Professor's Starting File</li>
                         </ol>
                     </nav>
                 </Col>
@@ -84,7 +84,7 @@ function Upload() {
                 <Row>
                     <Col className="px-5">
                         <h6 style={{fontSize: "1.25rem"}}>
-                            You can now <Link to="/launch">launch Assignment {currentAssignment != null ? currentAssignment + 1 : "Loading..."}</Link>.
+                            You can now <Link to="/launch">launch Assignment {currentAssignment != null ? currentAssignment + 1 : "Loading..."}</Link> and start your work.
                         </h6>
                     </Col>
                 </Row>
