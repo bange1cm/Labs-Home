@@ -1,51 +1,54 @@
 //store, read, and update assignment counter in a text file
 
 //imports
-use std::fs;
 use std::path::PathBuf;
 use tauri::Manager;
+use tauri::path::BaseDirectory;
 
-// Private helper: path helper
-fn assignment_file_path(app_handle: &tauri::AppHandle) -> PathBuf {
-    let dir = app_handle
-        .path()
-        .app_data_dir()
-        .expect("Failed to get app data dir");
-    fs::create_dir_all(&dir).unwrap();
-    dir.join("assignment.txt")
+// Private helper: Resolve assignment.txt in the read-only resources folder
+fn assignment_file_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    app.path()
+        .resolve("assignment.txt", BaseDirectory::Executable)
+        .map_err(|e| format!("Failed to resolve assignment.txt next to exe: {}", e))
 }
 
-//Private helper: load counter from file, return 1 if missing
-fn load_counter(app_handle: &tauri::AppHandle) -> u32 {
-    let path = assignment_file_path(app_handle);
+// Private helper: read the counter from assignment.txt
+fn load_counter(app: &tauri::AppHandle) -> Result<u32, String> {
+    let path = assignment_file_path(app)?;
     if !path.exists() {
-        return 1;
+        return Ok(1);
     }
-    let content = fs::read_to_string(path).unwrap_or_default();
-    content.trim().parse::<u32>().unwrap_or(0)
+
+    let content = std::fs::read_to_string(&path)
+        .map_err(|e| format!("Failed to read assignment.txt: {}", e))?;
+
+    content.trim().parse::<u32>()
+        .map_err(|e| format!("Failed to parse counter: {}", e))
 }
 
-//Private helper: save counter to file
-fn save_counter(app_handle: &tauri::AppHandle, counter: u32) {
-    let path = assignment_file_path(app_handle);
-    fs::write(path, counter.to_string()).unwrap();
+// Private helper: save counter to file
+fn save_counter(app: &tauri::AppHandle, value: u32) -> Result<(), String> {
+    let path = assignment_file_path(app)?;
+
+    std::fs::write(path, value.to_string())
+        .map_err(|e| format!("Failed to write assignment.txt: {}", e))
 }
 
 // Command: get current assignment counter
 // In React use: invoke("get_assignment")
 #[tauri::command]
-pub fn get_assignment(app_handle: tauri::AppHandle) -> u32 {
-    load_counter(&app_handle)
+pub fn get_assignment(app: tauri::AppHandle) -> Result<u32, String> {
+    load_counter(&app)
 }
 
 // Command: increment assignment counter
 // In React use: invoke("increment_assignment")
 #[tauri::command]
-pub fn increment_assignment(app_handle: tauri::AppHandle) -> u32 {
-    let mut counter = load_counter(&app_handle);
+pub fn increment_assignment(app: tauri::AppHandle) -> Result<u32, String> {
+    let mut counter = get_assignment(&app)?;
     counter += 1;
-    save_counter(&app_handle, counter);
-    counter
+    save_counter(&app, counter)?;
+    Ok(counter)
 }
 
 // Command: reset assignment counter to 1

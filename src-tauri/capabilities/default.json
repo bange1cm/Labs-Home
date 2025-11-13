@@ -7,6 +7,5 @@
     "core:default",
     "opener:default",
     "dialog:allow-open"
-
   ]
 }

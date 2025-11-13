@@ -6,6 +6,8 @@
 
 //lib is the central tauri module that pulls in all other modules
 //all functions that need to be exposed to the frontend via invoke_handler need to be listed here
+use tauri::Manager;
+use tauri::path::BaseDirectory;
 
 //other modules
 mod activity;
