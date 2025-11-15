@@ -12,6 +12,7 @@ mod activity;
 mod assignment;
 mod files;
 mod qemu;
+mod state;
 
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -27,11 +28,10 @@ pub fn run() {
             assignment::reset_assignment,
             assignment::debug_all_paths,
             qemu::launch_qemu,
-            qemu::is_qemu_running,
             files::download_assignment,
             files::process_uploaded_file,
             files::restart_assignment,
-            files::reset_all_data
+            files::reset_all_data,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

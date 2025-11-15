@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { useAssignmentCounter } from "./useAssignmentCounter";
 import { useActivityLog } from "./useActivityLog";
 
-
- //Custom hook to handle QEMU launch, polling, and error tracking.
+//Custom hook to handle QEMU launch, polling, and error tracking.
 export function useQemuLaunch() {
   const { currentAssignment, loadAssignment } = useAssignmentCounter();
   const { addActivity } = useActivityLog();
@@ -17,54 +17,48 @@ export function useQemuLaunch() {
     if (launchedRef.current) return; // guard against StrictMode double invoke
     launchedRef.current = true;
 
+    let unlisten: (() => void) | null = null;
+
     async function launchQemu() {
-      let assignment: number | null = null;
-
       try {
-        // Load assignment and save the result for activity logging
-        assignment = await loadAssignment();
+        // Set up event listener for QEMU status changes
+        unlisten = await listen<string>("qemu-status", async (event) => {
+          console.log("QEMU status changed:", event.payload);
+
+          if (event.payload === "started") {
+            setLaunching(true);
+            setError(null);
+          } else if (event.payload === "stopped") {
+            setLaunching(false);
+            await addActivity(`Closed Assignment ${currentAssignment ?? "?"}`);
+          } else if (event.payload === "error") {
+            setLaunching(false);
+            setError("QEMU process encountered an error");
+            await addActivity(`QEMU error detected`);
+          }
+        });
+
+        // Load assignment and launch QEMU
+        await loadAssignment();
         await invoke("launch_qemu");
-
-        // Poll backend periodically to detect when QEMU closes
-        let pollHandle: number | null = null;
-
-        try {
-          await new Promise((r) => setTimeout(r, 500)); // brief delay before polling
-
-          pollHandle = window.setInterval(async () => {
-            try {
-              // @ts-ignore - invoke typing sometimes loose
-              const res = await invoke("is_qemu_running");
-              const running = !!res;
-
-              if (!running) {
-                setLaunching(false);
-                await addActivity(
-                  `Closed Assignment ${assignment ?? currentAssignment ?? "?"}`
-                );
-                if (pollHandle) {
-                  clearInterval(pollHandle);
-                  pollHandle = null;
-                }
-              }
-            } catch (e) {
-              setError(String(e));
-              await addActivity(`Error polling QEMU status: ${e}`);
-            }
-          }, 1000);
-        } catch (e) {
-          setError(String(e));
-          await addActivity(`Error setting up QEMU polling: ${e}`);
-        }
       } catch (err: any) {
         setError(err?.message ?? String(err));
-        await addActivity(`Frontend error launching QEMU: ${err?.message ?? err}`);
+        await addActivity(
+          `Frontend error launching QEMU: ${err?.message ?? err}`
+        );
         setLaunching(false);
       }
     }
 
     launchQemu();
-  }, [loadAssignment]);
+
+    // Cleanup: remove event listener when component unmounts
+    return () => {
+      if (unlisten) {
+        unlisten();
+      }
+    };
+  }, [loadAssignment, currentAssignment, addActivity]);
 
   return { launching, error, currentAssignment };
 }
