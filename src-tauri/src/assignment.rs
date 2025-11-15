@@ -27,10 +27,6 @@ fn assignment_file_path() -> Result<PathBuf, String> {
 fn load_counter() -> Result<u32, String> {
     let path = assignment_file_path()?;
 
-    if !path.exists() {
-        return Ok(1);
-    }
-
     let contents = std::fs::read_to_string(&path)
         .map_err(|e| format!("Failed to read file: {}", e))?;
 

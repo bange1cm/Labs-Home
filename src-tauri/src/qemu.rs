@@ -9,7 +9,7 @@ pub fn launch_qemu(app_handle: tauri::AppHandle) -> Result<(), String> {
 
     // log attempt
     let attempt_msg = format!("Attempting to launch Assignment {}", current_assignment);
-    let _ = crate::activity::add_activity(app_handle.clone(), attempt_msg.clone());
+    let _ = crate::activity::add_activity(attempt_msg.clone());
 
     // Discover qemu_data folder: resource_dir, exe parents, cwd
     let mut qemu_candidates: Vec<std::path::PathBuf> = Vec::new();
@@ -66,12 +66,12 @@ pub fn launch_qemu(app_handle: tauri::AppHandle) -> Result<(), String> {
         match launcher.spawn() {
             Ok(_child) => {
                 let msg = format!("Launched Assignment {}", current_assignment);
-                let _ = crate::activity::add_activity(app_handle.clone(), msg.clone());
+                let _ = crate::activity::add_activity( msg.clone());
                 Ok(())
             }
             Err(e) => {
                 let msg = format!("Error launching Assignment {}: {}", current_assignment, e);
-                let _ = crate::activity::add_activity(app_handle.clone(), msg.clone());
+                let _ = crate::activity::add_activity(msg.clone());
                 Err(msg)
             }
         }
@@ -99,12 +99,12 @@ pub fn launch_qemu(app_handle: tauri::AppHandle) -> Result<(), String> {
         match launcher.spawn() {
             Ok(_child) => {
                 let msg = format!("Launched Assignment {} (macOS)", current_assignment);
-                let _ = crate::activity::add_activity(app_handle.clone(), msg.clone());
+                let _ = crate::activity::add_activity(msg.clone());
                 Ok(())
             }
             Err(e) => {
                 let msg = format!("Error launching Assignment {} on macOS: {}", current_assignment, e);
-                let _ = crate::activity::add_activity(app_handle.clone(), msg.clone());
+                let _ = crate::activity::add_activity(msg.clone());
                 Err(msg)
             }
         }
