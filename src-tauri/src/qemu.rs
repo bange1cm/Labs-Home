@@ -5,7 +5,7 @@ use tauri::{Manager};
 #[tauri::command]
 pub fn launch_qemu(app_handle: tauri::AppHandle) -> Result<(), String> {
     // get current assignment
-    let current_assignment = crate::assignment::get_assignment(app_handle.clone());
+    let current_assignment = crate::assignment::get_assignment()?;
 
     // log attempt
     let attempt_msg = format!("Attempting to launch Assignment {}", current_assignment);
@@ -114,8 +114,8 @@ pub fn launch_qemu(app_handle: tauri::AppHandle) -> Result<(), String> {
 // Command the frontend can poll to check whether the current assignment's QEMU
 // process is still running. Returns true if a matching process is found.
 #[tauri::command]
-pub fn is_qemu_running(app_handle: tauri::AppHandle) -> Result<bool, String> {
-    let current_assignment = crate::assignment::get_assignment(app_handle.clone());
+pub fn is_qemu_running() -> Result<bool, String> {
+    let current_assignment = crate::assignment::get_assignment()?;
     let overlay_name = format!("overlay_a{}.qcow2", current_assignment);
 
     if cfg!(target_os = "windows") {

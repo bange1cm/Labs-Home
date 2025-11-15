@@ -6,8 +6,6 @@
 
 //lib is the central tauri module that pulls in all other modules
 //all functions that need to be exposed to the frontend via invoke_handler need to be listed here
-use tauri::Manager;
-use tauri::path::BaseDirectory;
 
 //other modules
 mod activity;
@@ -27,6 +25,7 @@ pub fn run() {
             assignment::get_assignment,
             assignment::increment_assignment,
             assignment::reset_assignment,
+            assignment::debug_all_paths,
             qemu::launch_qemu,
             qemu::is_qemu_running,
             files::download_assignment,

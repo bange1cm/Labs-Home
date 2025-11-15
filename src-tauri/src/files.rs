@@ -53,7 +53,7 @@ fn create_overlay_file(qemu_data_dir: &PathBuf, overlay_name: &str)-> Result<(),
 #[tauri::command]
 pub fn download_assignment(app_handle: tauri::AppHandle) -> Result<(), String> {
     // get current assignment
-    let current_assignment = crate::assignment::get_assignment(app_handle.clone());
+    let current_assignment = crate::assignment::get_assignment()?;
 
     // Discover qemu_data folder: resource_dir, exe parents, cwd
     let qemu_data_dir = qemu_data_dir(&app_handle)?;
@@ -87,7 +87,7 @@ pub fn download_assignment(app_handle: tauri::AppHandle) -> Result<(), String> {
 #[tauri::command]
 pub fn process_uploaded_file(app_handle: tauri::AppHandle, file_path: String) -> Result<(), String> {
     // get current assignment
-    let current_assignment = crate::assignment::get_assignment(app_handle.clone());
+    let current_assignment = crate::assignment::get_assignment()?;
     let next_assignment = current_assignment + 1;
 
     // Get qemu_data directory
@@ -141,7 +141,7 @@ pub fn process_uploaded_file(app_handle: tauri::AppHandle, file_path: String) ->
     create_overlay_file(&qemu_data_dir, &new_overlay_name)?; 
 
     //increment assignment
-    crate::assignment::increment_assignment(app_handle.clone());
+    let _ = crate::assignment::increment_assignment();
 
     Ok(())
 
@@ -151,7 +151,7 @@ pub fn process_uploaded_file(app_handle: tauri::AppHandle, file_path: String) ->
 #[tauri::command]
 pub fn restart_assignment(app_handle: tauri::AppHandle) -> Result<(), String> {
     // get current assignment
-    let current_assignment = crate::assignment::get_assignment(app_handle.clone());
+    let current_assignment = crate::assignment::get_assignment()?;
 
     // Get qemu_data directory
     let qemu_data_dir = qemu_data_dir(&app_handle)?;
@@ -207,7 +207,7 @@ pub fn reset_all_data(app_handle: tauri::AppHandle) -> Result<(), String> {
     }
 
     // Reset assignment counter to 1
-    crate::assignment::reset_assignment(app_handle.clone());
+    crate::assignment::reset_assignment();
 
     //create overlay for assignment 1
     let overlay_name = format!("overlay_a1.qcow2");
