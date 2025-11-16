@@ -14,32 +14,33 @@ export function useQemuLaunch() {
   const launchedRef = useRef(false);
 
   useEffect(() => {
-    if (launchedRef.current) return; // guard against StrictMode double invoke
+    if (launchedRef.current) return;
     launchedRef.current = true;
 
     let unlisten: (() => void) | null = null;
 
     async function launchQemu() {
       try {
-        // Set up event listener for QEMU status changes
-        unlisten = await listen<string>("qemu-status", async (event) => {
-          console.log("QEMU status changed:", event.payload);
+        // Get the assignment number before setting up the listener
+        await loadAssignment();
+        const assignmentNum = await invoke<number>("get_assignment");
 
+        // Set up event listener
+        unlisten = await listen<string>("qemu-status", async (event) => {
           if (event.payload === "started") {
             setLaunching(true);
             setError(null);
           } else if (event.payload === "stopped") {
             setLaunching(false);
-            await addActivity(`Closed Assignment ${currentAssignment ?? "?"}`);
+            await addActivity(`Closed Assignment ${assignmentNum}`);
           } else if (event.payload === "error") {
             setLaunching(false);
             setError("QEMU process encountered an error");
-            await addActivity(`QEMU error detected`);
+            await addActivity("QEMU error detected");
           }
         });
 
-        // Load assignment and launch QEMU
-        await loadAssignment();
+        // Launch QEMU
         await invoke("launch_qemu");
       } catch (err: any) {
         setError(err?.message ?? String(err));
@@ -52,13 +53,12 @@ export function useQemuLaunch() {
 
     launchQemu();
 
-    // Cleanup: remove event listener when component unmounts
     return () => {
       if (unlisten) {
         unlisten();
       }
     };
-  }, [loadAssignment, currentAssignment, addActivity]);
+  }, []);
 
   return { launching, error, currentAssignment };
 }
