@@ -4,7 +4,6 @@ import { listen } from "@tauri-apps/api/event";
 import { useAssignmentCounter } from "./useAssignmentCounter";
 import { useActivityLog } from "./useActivityLog";
 
-//Custom hook to handle QEMU launch, polling, and error tracking.
 export function useQemuLaunch() {
   const { currentAssignment, loadAssignment } = useAssignmentCounter();
   const { addActivity } = useActivityLog();
@@ -21,11 +20,10 @@ export function useQemuLaunch() {
 
     async function launchQemu() {
       try {
-        // Get the assignment number before setting up the listener
         await loadAssignment();
         const assignmentNum = await invoke<number>("get_assignment");
 
-        // Set up event listener
+        //listen to qemu status
         unlisten = await listen<string>("qemu-status", async (event) => {
           if (event.payload === "started") {
             setLaunching(true);
@@ -36,17 +34,13 @@ export function useQemuLaunch() {
           } else if (event.payload === "error") {
             setLaunching(false);
             setError("QEMU process encountered an error");
-            await addActivity("QEMU error detected");
           }
         });
 
-        // Launch QEMU
         await invoke("launch_qemu");
       } catch (err: any) {
         setError(err?.message ?? String(err));
-        await addActivity(
-          `Frontend error launching QEMU: ${err?.message ?? err}`
-        );
+        await addActivity(`Error launching QEMU: ${err?.message ?? err}`);
         setLaunching(false);
       }
     }
