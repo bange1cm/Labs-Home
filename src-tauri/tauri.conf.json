@@ -22,7 +22,7 @@
     }
   },
   "bundle": {
-    "resources": ["icons/", "./resources/win64"],
+    "resources": ["icons/"],
     "active": true,
     "targets": "all",
     "icon": [
