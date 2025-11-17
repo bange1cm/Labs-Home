@@ -21,8 +21,8 @@ fn get_exe_dir() -> Result<PathBuf, String> {
         .map(|p| p.to_path_buf())
 }
 
-//Private helper
-fn get_drives_dir() -> Result<PathBuf, String> {
+//public helper (can access in other rust files)
+pub fn get_drives_dir() -> Result<PathBuf, String> {
     Ok(get_exe_dir()?.join("drives"))
 }
 

@@ -12,7 +12,6 @@ mod activity;
 mod assignment;
 mod files;
 mod qemu;
-mod state;
 
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
