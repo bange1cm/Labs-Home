@@ -1,56 +1,85 @@
 //store, read, and update assignment counter in a text file
 
 //imports
-use std::fs;
 use std::path::PathBuf;
 use tauri::Manager;
 
-// Private helper: path helper
-fn assignment_file_path(app_handle: &tauri::AppHandle) -> PathBuf {
-    let dir = app_handle
-        .path()
-        .app_data_dir()
-        .expect("Failed to get app data dir");
-    fs::create_dir_all(&dir).unwrap();
-    dir.join("assignment.txt")
+//Private Helper: helper to get exe_dir
+fn exe_dir() -> Result<std::path::PathBuf, String> {
+    let exe = std::env::current_exe()
+        .map_err(|e| format!("Failed to get current_exe: {}", e))?;
+
+    let dir = exe.parent()
+        .ok_or("Failed to get parent directory of exe")?;
+
+    Ok(dir.to_path_buf())
 }
 
-//Private helper: load counter from file, return 1 if missing
-fn load_counter(app_handle: &tauri::AppHandle) -> u32 {
-    let path = assignment_file_path(app_handle);
-    if !path.exists() {
-        return 1;
-    }
-    let content = fs::read_to_string(path).unwrap_or_default();
-    content.trim().parse::<u32>().unwrap_or(0)
+
+// Private helper: Resolve assignment.txt in the read-only resources folder
+fn assignment_file_path() -> Result<PathBuf, String> {
+    let dir = exe_dir()?;
+    Ok(dir.join("assignment.txt"))
 }
 
-//Private helper: save counter to file
-fn save_counter(app_handle: &tauri::AppHandle, counter: u32) {
-    let path = assignment_file_path(app_handle);
-    fs::write(path, counter.to_string()).unwrap();
+
+// Private helper: read the counter from assignment.txt
+fn load_counter() -> Result<u32, String> {
+    let path = assignment_file_path()?;
+
+    let contents = std::fs::read_to_string(&path)
+        .map_err(|e| format!("Failed to read file: {}", e))?;
+
+    contents.trim().parse::<u32>()
+        .map_err(|e| format!("Failed to parse number: {}", e))
+}
+
+
+// Private helper: save counter to file
+fn save_counter(value: u32) -> Result<(), String> {
+    let path = assignment_file_path()?;
+
+    std::fs::write(path, value.to_string())
+        .map_err(|e| format!("Failed to write assignment.txt: {}", e))
 }
 
 // Command: get current assignment counter
 // In React use: invoke("get_assignment")
 #[tauri::command]
-pub fn get_assignment(app_handle: tauri::AppHandle) -> u32 {
-    load_counter(&app_handle)
+pub fn get_assignment() -> Result<u32, String> {
+    load_counter()
 }
 
 // Command: increment assignment counter
 // In React use: invoke("increment_assignment")
 #[tauri::command]
-pub fn increment_assignment(app_handle: tauri::AppHandle) -> u32 {
-    let mut counter = load_counter(&app_handle);
+pub fn increment_assignment() -> Result<u32, String> {
+    let mut counter = get_assignment()?;
     counter += 1;
-    save_counter(&app_handle, counter);
-    counter
+    save_counter(counter)?;
+    Ok(counter)
 }
 
 // Command: reset assignment counter to 1
 // In React use: invoke("reset_assignment")
 #[tauri::command]
-pub fn reset_assignment(app_handle: tauri::AppHandle) {
-    save_counter(&app_handle, 1);
+pub fn reset_assignment() {
+    let _ = save_counter(1);
+}
+
+//for testing purposes
+#[tauri::command]
+pub fn debug_all_paths(app: tauri::AppHandle) -> String {
+    let mut out = String::new();
+
+    out += &format!("Tauri executable_dir():  {:?}\n",
+        app.path().executable_dir());
+    out += &format!("Tauri resource_dir():    {:?}\n",
+        app.path().resource_dir());
+    out += &format!("std::env::current_exe(): {:?}\n",
+        std::env::current_exe());
+    out += &format!("std::env::current_dir(): {:?}\n",
+        std::env::current_dir());
+
+    out
 }

@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { useAssignmentCounter } from "./useAssignmentCounter";
 import { useActivityLog } from "./useActivityLog";
 
-
- //Custom hook to handle QEMU launch, polling, and error tracking.
 export function useQemuLaunch() {
   const { currentAssignment, loadAssignment } = useAssignmentCounter();
   const { addActivity } = useActivityLog();
@@ -14,57 +13,46 @@ export function useQemuLaunch() {
   const launchedRef = useRef(false);
 
   useEffect(() => {
-    if (launchedRef.current) return; // guard against StrictMode double invoke
+    if (launchedRef.current) return;
     launchedRef.current = true;
 
+    let unlisten: (() => void) | null = null;
+
     async function launchQemu() {
-      let assignment: number | null = null;
-
       try {
-        // Load assignment and save the result for activity logging
-        assignment = await loadAssignment();
+        await loadAssignment();
+        const assignmentNum = await invoke<number>("get_assignment");
+
+        //listen to qemu status
+        unlisten = await listen<string>("qemu-status", async (event) => {
+          if (event.payload === "started") {
+            setLaunching(true);
+            setError(null);
+          } else if (event.payload === "stopped") {
+            setLaunching(false);
+            await addActivity(`Closed Assignment ${assignmentNum}`);
+          } else if (event.payload === "error") {
+            setLaunching(false);
+            setError("QEMU process encountered an error");
+          }
+        });
+
         await invoke("launch_qemu");
-
-        // Poll backend periodically to detect when QEMU closes
-        let pollHandle: number | null = null;
-
-        try {
-          await new Promise((r) => setTimeout(r, 500)); // brief delay before polling
-
-          pollHandle = window.setInterval(async () => {
-            try {
-              // @ts-ignore - invoke typing sometimes loose
-              const res = await invoke("is_qemu_running");
-              const running = !!res;
-
-              if (!running) {
-                setLaunching(false);
-                await addActivity(
-                  `Closed Assignment ${assignment ?? currentAssignment ?? "?"}`
-                );
-                if (pollHandle) {
-                  clearInterval(pollHandle);
-                  pollHandle = null;
-                }
-              }
-            } catch (e) {
-              setError(String(e));
-              await addActivity(`Error polling QEMU status: ${e}`);
-            }
-          }, 1000);
-        } catch (e) {
-          setError(String(e));
-          await addActivity(`Error setting up QEMU polling: ${e}`);
-        }
       } catch (err: any) {
         setError(err?.message ?? String(err));
-        await addActivity(`Frontend error launching QEMU: ${err?.message ?? err}`);
+        await addActivity(`Error launching QEMU: ${err?.message ?? err}`);
         setLaunching(false);
       }
     }
 
     launchQemu();
-  }, [loadAssignment]);
+
+    return () => {
+      if (unlisten) {
+        unlisten();
+      }
+    };
+  }, []);
 
   return { launching, error, currentAssignment };
 }

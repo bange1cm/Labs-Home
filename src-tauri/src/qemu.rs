@@ -1,152 +1,144 @@
 use std::process::Command;
-use tauri::{Manager};
+use std::os::windows::process::CommandExt;
+use tauri::{Manager, Emitter};
+use std::path::PathBuf;
+use std::thread;
+use std::time::Duration;
+use std::fs;
+use crate::activity;
+use crate::assignment;
 
-// In React use: invoke("launch_qemu")
-#[tauri::command]
-pub fn launch_qemu(app_handle: tauri::AppHandle) -> Result<(), String> {
-    // get current assignment
-    let current_assignment = crate::assignment::get_assignment(app_handle.clone());
+const CREATE_NEW_CONSOLE: u32 = 0x00000010;
+const CREATE_NO_WINDOW: u32 = 0x08000000;
 
-    // log attempt
-    let attempt_msg = format!("Attempting to launch Assignment {}", current_assignment);
-    let _ = crate::activity::add_activity(app_handle.clone(), attempt_msg.clone());
-
-    // Discover qemu_data folder: resource_dir, exe parents, cwd
-    let mut qemu_candidates: Vec<std::path::PathBuf> = Vec::new();
-    if let Ok(rd) = app_handle.path().resource_dir() {
-        qemu_candidates.push(rd.join("qemu_data"));
-    }
-    if let Ok(mut p) = std::env::current_exe() {
-        while let Some(parent) = p.parent() {
-            qemu_candidates.push(parent.join("qemu_data"));
-            p = parent.to_path_buf();
-        }
-    }
-    if let Ok(cwd) = std::env::current_dir() {
-        qemu_candidates.push(cwd.join("qemu_data"));
-    }
-
-    let qemu_data_dir = qemu_candidates
-        .into_iter()
-        .find(|p| p.exists())
-        .ok_or_else(|| "Failed to locate qemu_data directory".to_string())?;
-
-    // overlay filename
-    let overlay_name = format!("overlay_a{}.qcow2", current_assignment);
-
-    // Windows: use the project's batch with START so the console output is visible,
-    // then monitor processes for the overlay filename via PowerShell to detect exit.
-    if cfg!(target_os = "windows") {
-        let batch_path = qemu_data_dir.join("launch_qemu.bat");
-
-        let overlay_name = overlay_name.clone();
-
-        // Build START invocation: start "" /D <qemu_data_dir> cmd /k call <batch> <overlay>
-        let wd_str = qemu_data_dir.to_string_lossy().to_string();
-        let batch_filename = batch_path
-            .file_name()
-            .map(|s| s.to_string_lossy().to_string())
-            .ok_or_else(|| "Invalid batch path".to_string())?;
-
-        let mut launcher = Command::new("cmd");
-        let args_vec = vec![
-            "/C".to_string(),
-            "start".to_string(),
-            "".to_string(),
-            "/D".to_string(),
-            wd_str.clone(),
-            "cmd".to_string(),
-            "/k".to_string(),
-            "call".to_string(),
-            batch_filename.clone(),
-            overlay_name.clone(),
-        ];
-        launcher.args(&args_vec);
-
-        match launcher.spawn() {
-            Ok(_child) => {
-                let msg = format!("Launched Assignment {}", current_assignment);
-                let _ = crate::activity::add_activity(app_handle.clone(), msg.clone());
-                Ok(())
-            }
-            Err(e) => {
-                let msg = format!("Error launching Assignment {}: {}", current_assignment, e);
-                let _ = crate::activity::add_activity(app_handle.clone(), msg.clone());
-                Err(msg)
-            }
-        }
-    } else { // macOS
-        // attempt to use bundled overlay path, then open Terminal via osascript
-        let overlay_path = qemu_data_dir.join("drives").join("overlay").join(&overlay_name);
-        let overlay_arg = if overlay_path.exists() {
-            overlay_path.to_string_lossy().to_string()
-        } else {
-            overlay_name.clone()
-        };
-
-        let qemu_cmd = format!(
-            "qemu-system-x86_64 -m 1G -smp 2 -nographic -device virtio-net-pci,netdev=net0 -netdev user,id=net0,hostfwd=tcp::2222-:22 -drive if=virtio,format=qcow2,file=\"{}\" -monitor telnet::45454,server,nowait -serial mon:stdio",
-            overlay_arg
-        );
-
-        // escape for osascript
-        let qemu_cmd_escaped = qemu_cmd.replace('"', "\\\"");
-        let apple_cmd = format!("tell application \"Terminal\" to do script \"{}\"", qemu_cmd_escaped);
-
-        let mut launcher = Command::new("osascript");
-        launcher.args(["-e", &apple_cmd]);
-
-        match launcher.spawn() {
-            Ok(_child) => {
-                let msg = format!("Launched Assignment {} (macOS)", current_assignment);
-                let _ = crate::activity::add_activity(app_handle.clone(), msg.clone());
-                Ok(())
-            }
-            Err(e) => {
-                let msg = format!("Error launching Assignment {} on macOS: {}", current_assignment, e);
-                let _ = crate::activity::add_activity(app_handle.clone(), msg.clone());
-                Err(msg)
-            }
-        }
-    } 
+//Private helper
+fn get_exe_dir() -> Result<PathBuf, String> {
+    let exe = std::env::current_exe()
+        .map_err(|e| format!("Failed to get current_exe: {}", e))?;
+    
+    exe.parent()
+        .ok_or("Failed to get parent directory of exe".to_string())
+        .map(|p| p.to_path_buf())
 }
 
-// Command the frontend can poll to check whether the current assignment's QEMU
-// process is still running. Returns true if a matching process is found.
-#[tauri::command]
-pub fn is_qemu_running(app_handle: tauri::AppHandle) -> Result<bool, String> {
-    let current_assignment = crate::assignment::get_assignment(app_handle.clone());
-    let overlay_name = format!("overlay_a{}.qcow2", current_assignment);
+//public helper (can access in other rust files)
+pub fn get_drives_dir() -> Result<PathBuf, String> {
+    Ok(get_exe_dir()?.join("drives"))
+}
 
-    if cfg!(target_os = "windows") {
-        // Use `tasklist` to check for known QEMU process image names. This is
-        // more robust than relying on CommandLine matching which can pick up
-        // wrapper shells (cmd.exe) and leave false positives.
-        let candidates = [
-            "qemu-system-x86_64.exe",
-            "qemu-system-x86.exe",
-            "qemu.exe",
-        ];
-        for name in candidates.iter() {
-            // /NH removes header, /FI applies filter, output will contain the image name if present
-            if let Ok(out) = Command::new("tasklist").args(["/FI", &format!("IMAGENAME eq {}", name), "/NH"]).output() {
-                let s = String::from_utf8_lossy(&out.stdout).to_string();
-                if s.to_lowercase().contains(&name.to_lowercase()) {
-                    return Ok(true);
-                }
+//private helper. resources/win64
+fn get_win64_dir(app: tauri::AppHandle) -> Result<PathBuf, String> {
+    let win64 = app
+        .path()
+        .resource_dir()
+        .map_err(|e| e.to_string())?
+        .join("resources")
+        .join("win64");
+
+    if !win64.exists() {
+        return Err(format!("Win64 folder not found: {:?}", win64));
+    }
+
+    Ok(win64)
+}
+
+//Private helper
+fn is_qemu_process_running() -> bool {
+    Command::new("tasklist")
+        .args(["/FI", "IMAGENAME eq qemu-system-x86_64.exe", "/NH"])
+        .creation_flags(CREATE_NO_WINDOW)
+        .output()
+        .ok()
+        .map(|output| String::from_utf8_lossy(&output.stdout).contains("qemu-system-x86_64.exe"))
+        .unwrap_or(false)
+}
+
+//Use: invoke(launch_qemu)
+#[tauri::command]
+pub fn launch_qemu(app_handle: tauri::AppHandle) -> Result<(), String> {
+    let current_assignment = assignment::get_assignment()?;
+    activity::add_activity(format!("Attempting to launch Assignment {}", current_assignment)).ok();
+
+    let win64_dir = get_win64_dir(app_handle.clone())?;
+    let drives_dir = get_drives_dir()?;
+
+    //qemu exe inside resources/win64
+    let qemu_exe = win64_dir.join("qemu-system-x86_64.exe");
+    if !qemu_exe.exists() {
+        return Err(format!("QEMU executable not found: {:?}", qemu_exe));
+    }
+    let qemu_exe_str = qemu_exe
+        .to_str()
+        .ok_or("Invalid QEMU path")?
+        .trim_start_matches(r"\\?\");
+
+    //overlay file inside drives/overlay
+    let overlay_path = drives_dir
+        .join("overlay")
+        .join(format!("overlay_a{}.qcow2", current_assignment));
+    if !overlay_path.exists() {
+        return Err(format!("Overlay disk not found: {:?}", overlay_path));
+    }
+    let overlay_path_str = overlay_path
+        .to_str()
+        .ok_or("Invalid overlay path")?
+        .trim_start_matches(r"\\?\");
+
+    //use batch file to launch new terminal
+    let batch_file = std::env::temp_dir().join(format!("launch_qemu_{}.bat", current_assignment));
+    let batch_content = format!(
+        "@echo off\r\n\
+        title QEMU Assignment {}\r\n\
+        echo Starting QEMU...\r\n\
+        echo.\r\n\
+        \"{}\" -m 1G -smp 2 -nographic -device virtio-net-pci,netdev=net0 -netdev user,id=net0,hostfwd=tcp::2222-:22 -drive if=virtio,format=qcow2,file=\"{}\" -monitor telnet::45454,server,nowait -serial mon:stdio\r\n\
+        echo.\r\n\
+        echo QEMU has exited.\r\n\
+        echo Press any key to close this window...\r\n\
+        pause > nul\r\n\
+        del \"%~f0\"\r\n",
+        current_assignment,
+        qemu_exe_str,
+        overlay_path_str
+    );
+    fs::write(&batch_file, batch_content)
+        .map_err(|e| format!("Failed to create batch file: {}", e))?;
+
+    Command::new(batch_file.to_str().ok_or("Invalid batch file path")?)
+        .creation_flags(CREATE_NEW_CONSOLE)
+        .spawn()
+        .map_err(|e| format!("Failed to launch QEMU: {}", e))?;
+
+    app_handle.emit("qemu-status", "started").ok();
+
+    //thread to keep track if qemu terminal is still open
+    thread::spawn(move || {
+        thread::sleep(Duration::from_millis(2000));
+        
+        let mut started = false;
+        for _ in 0..20 {
+            if is_qemu_process_running() {
+                started = true;
+                break;
+            }
+            thread::sleep(Duration::from_millis(500));
+        }
+
+        if !started {
+            activity::add_activity("QEMU process never started".to_string()).ok();
+            app_handle.emit("qemu-status", "error").ok();
+            return;
+        }
+
+        loop {
+            thread::sleep(Duration::from_secs(1));
+            
+            if !is_qemu_process_running() {
+                app_handle.emit("qemu-status", "stopped").ok();
+                break;
             }
         }
-        Ok(false)
-    } else if cfg!(target_os = "macos") {
-        match Command::new("pgrep").args(["-f", &overlay_name]).output() {
-            Ok(out) => Ok(out.status.success()),
-            Err(e) => Err(format!("pgrep error: {}", e)),
-        }
-    } else {
-        // Fallback: check for qemu-system-x86_64 process presence
-        match Command::new("pgrep").args(["-f", "qemu-system-x86_64"]).output() {
-            Ok(out) => Ok(out.status.success()),
-            Err(e) => Err(format!("pgrep error: {}", e)),
-        }
-    }
+    });
+
+    Ok(())
 }

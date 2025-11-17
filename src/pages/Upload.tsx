@@ -10,147 +10,205 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "../main.css";
 import { useAssignmentCounter } from "../hooks/useAssignmentCounter";
-
+import Spinner from "react-bootstrap/Spinner";
 
 function Upload() {
-    const navigate = useNavigate();
-    const {currentAssignment, loadAssignment} = useAssignmentCounter();
-    const [selectedFilePath, setSelectedFilePath] =  useState<string | null>(null);
-    const {upload, error, uploaded} = uploadAssignment(selectedFilePath);
-    const [flag, setFlag] = useState(false);
+  const navigate = useNavigate();
+  const { currentAssignment, loadAssignment } = useAssignmentCounter();
+  const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
+  const { upload, error, uploaded } = uploadAssignment(selectedFilePath);
+  const [flag, setFlag] = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  const handleUpload = () => {
+    if (!selectedFilePath) {
+      setFlag(true);
+    } else {
+      setLoading(true);
+      upload();
+    }
+  };
 
-    const handleUpload = () => {
-        if (!selectedFilePath) {
-            setFlag(true);
-        }
-        else{
-            upload();
-        }
-    };
+  useEffect(() => {
+    loadAssignment();
+  }, []);
 
-    useEffect(() => {
-        loadAssignment();
-    }, []);
-
-    return(
-        <Container>
+  return (
+    <Container>
+      <Row>
+        <Col>
+          <nav aria-label="breadcrumb">
+            <ol className="breadcrumb">
+              <li className="breadcrumb-item">
+                <a href="/">Home</a>
+              </li>
+              <li className="breadcrumb-item active" aria-current="page">
+                Upload Professor's Starting File
+              </li>
+            </ol>
+          </nav>
+        </Col>
+      </Row>
+      <>
+        {error ? (
+          <>
             <Row>
-                <Col>
-                    <nav aria-label="breadcrumb">
-                        <ol className="breadcrumb">
-                            <li className="breadcrumb-item"><a href="/">Home</a></li>
-                            <li className="breadcrumb-item active" aria-current="page">Upload Professor's Starting File</li>
-                        </ol>
-                    </nav>
-                </Col>
-            </Row>
-            <>{error ? (
-                <>
-                <Row>
-                    <Col>
-                    <h1 className="pb-4 text-danger">Failed to Upload</h1>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <p className="px-5">
-                            There was an error trying to upload assignment{" "}
-                            {currentAssignment != null ? currentAssignment + 1 : "Loading..."}. 
-                            Please check the{" "}
-                            <Link to="/activity-log">Activity Log</Link> for more details.
-                        </p>
-                        <p className="px-5 text-muted small">
-                            Error details: <code>{error}</code>
-                        </p>
-                    </Col>
-                </Row>
-                <Row>
-                        <Col className="pt-5">
-                            <TwoButtonRow 
-                            rightButtonText="Dismiss"
-                            rightButtonOnClick={() => navigate("/")}
-                            />
-                        </Col>
-                    </Row>
-                </>
-            ) : uploaded ? (
-                <>
-                <Row>
-                    <Col>
-                        <h1 className="pb-4">Successfully Uploaded Assignment {currentAssignment != null ? currentAssignment + 1 : "Loading..."}</h1>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col className="px-5">
-                        <h6 style={{fontSize: "1.25rem"}}>
-                            You can now <Link to="/launch">launch Assignment {currentAssignment != null ? currentAssignment + 1 : "Loading..."}</Link> and start your work.
-                        </h6>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col className="pt-5 px-5">
-                        <TwoButtonRow 
-                        rightButtonText="Dismiss"
-                        rightButtonOnClick={() => navigate("/")}
-                         />
-                     </Col>
-                </Row>
-                </>
-            ) : (
-            <>
-            <Row>
-                <Col>
-                    <h1 className="pb-4">Upload the Professor's Starting File for Assignment {currentAssignment != null ? currentAssignment + 1 : "Loading..."}</h1>
-                </Col>
+              <Col>
+                <h1 className="pb-4 text-danger">Failed to Upload</h1>
+              </Col>
             </Row>
             <Row>
-                <Col className="px-5">
-                    <WarningMessage>
-                        Warning: make sure to{" "}
-                        <Button
-                            variant="link"
-                            onClick={() => navigate("/download")}
-                            style={{
-                            padding: 0,
-                            color: "var(--warning-orange)",
-                            fontSize: "inherit",
-                            fontWeight: "inherit",
-                            verticalAlign: "baseline",
-                            }}
-                        >
-                            download Assignment {currentAssignment ?? "Loading..."}
-                        </Button>{" "}
-                        before uploading Assignment {currentAssignment != null ? currentAssignment + 1 : "Loading..."}.
-                        <br /> <h6 className="pt-3"><i>Files must be uploaded in the order provided by the professor</i></h6>
-                    </WarningMessage>
-                </Col>
+              <Col>
+                <p className="px-5">
+                  There was an error trying to upload assignment{" "}
+                  {currentAssignment != null
+                    ? currentAssignment + 1
+                    : "Loading..."}
+                  . Please check the{" "}
+                  <Link to="/activity-log">Activity Log</Link> for more details.
+                </p>
+                <p className="px-5 text-muted small">
+                  Error details: <code>{error}</code>
+                </p>
+              </Col>
             </Row>
             <Row>
-                <Col className="px-5">
-                    <FileUploadBox onFileSelect={setSelectedFilePath} flag={flag} />
-                </Col>
+              <Col className="pt-5">
+                <TwoButtonRow
+                  rightButtonText="Dismiss"
+                  rightButtonOnClick={() => navigate("/")}
+                />
+              </Col>
+            </Row>
+          </>
+        ) : uploaded ? (
+          <>
+            <Row>
+              <Col>
+                <h1 className="pb-4">
+                  Successfully Uploaded Assignment{" "}
+                  {currentAssignment != null
+                    ? currentAssignment + 1
+                    : "Loading..."}
+                </h1>
+              </Col>
+            </Row>
+            <Row>
+              <Col className="px-5">
+                <h6 style={{ fontSize: "1.25rem" }}>
+                  You can now{" "}
+                  <Link to="/launch">
+                    launch Assignment{" "}
+                    {currentAssignment != null
+                      ? currentAssignment + 1
+                      : "Loading..."}
+                  </Link>{" "}
+                  and start your work.
+                </h6>
+              </Col>
+            </Row>
+            <Row>
+              <Col className="pt-5 px-5">
+                <TwoButtonRow
+                  rightButtonText="Dismiss"
+                  rightButtonOnClick={() => navigate("/")}
+                />
+              </Col>
+            </Row>
+          </>
+        ) : (
+          <>
+            <Row>
+              <Col>
+                <h1 className="pb-4">
+                  Upload the Professor's Starting File for Assignment{" "}
+                  {currentAssignment != null
+                    ? currentAssignment + 1
+                    : "Loading..."}
+                </h1>
+              </Col>
+            </Row>
+            <Row>
+              <Col className="px-5">
+                <WarningMessage>
+                  Warning: make sure to{" "}
+                  <Button
+                    variant="link"
+                    onClick={() => navigate("/download")}
+                    style={{
+                      padding: 0,
+                      color: "var(--warning-orange)",
+                      fontSize: "inherit",
+                      fontWeight: "inherit",
+                      verticalAlign: "baseline",
+                    }}
+                  >
+                    download Assignment {currentAssignment ?? "Loading..."}
+                  </Button>{" "}
+                  before uploading Assignment{" "}
+                  {currentAssignment != null
+                    ? currentAssignment + 1
+                    : "Loading..."}
+                  .
+                  <br />{" "}
+                  <h6 className="pt-3">
+                    <i>
+                      Files must be uploaded in the order provided by the
+                      professor
+                    </i>
+                  </h6>
+                </WarningMessage>
+              </Col>
+            </Row>
+            <Row>
+              <Col className="px-5">
+                <FileUploadBox onFileSelect={setSelectedFilePath} flag={flag} />
+              </Col>
             </Row>
             {flag ? (
-            <Row>
-                <Col className="px-5" style={{color: "red", fontWeight: "bold", fontSize: "1.1rem"}}>
-                    No file selected. Please select a file to upload.
+              <Row>
+                <Col
+                  className="px-5"
+                  style={{
+                    color: "red",
+                    fontWeight: "bold",
+                    fontSize: "1.1rem",
+                  }}
+                >
+                  No file selected. Please select a file to upload.
                 </Col>
-            </Row>
+              </Row>
             ) : null}
-            <div className="px-5">
-            <TwoButtonRow 
-                leftButtonText="Upload"
-                leftButtonOnClick={handleUpload}
-                rightButtonText="Cancel"
-                rightButtonOnClick={() => navigate("/")}
-                />
-            </div>
-            </>)}</>
-        </Container>
-       
-       
-    );
+            {!loading ? (
+              <Row>
+                <Col className="px-5 pt-4">
+                  <TwoButtonRow
+                    leftButtonText="Reset"
+                    leftButtonOnClick={() => handleUpload()}
+                    rightButtonText="Cancel"
+                    rightButtonOnClick={() => navigate("/help")}
+                  />
+                </Col>
+              </Row>
+            ) : (
+              <Row>
+                <Col className="px-5 pt-4">
+                  <Spinner
+                    animation="border"
+                    variant="primary"
+                    role="status"
+                    className="mt-4"
+                  >
+                    <span className="visually-hidden">Loading...</span>
+                  </Spinner>
+                </Col>
+              </Row>
+            )}
+          </>
+        )}
+      </>
+    </Container>
+  );
 }
 
 export default Upload;
