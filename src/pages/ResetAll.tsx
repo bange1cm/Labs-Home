@@ -1,138 +1,154 @@
-import {Container, Row, Col} from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
 import TwoButtonRow from "../components/TwoButtonRow";
 import { useNavigate, Link } from "react-router-dom";
 import WarningMessage from "../components/WarningMessage";
 import { resetAll } from "../hooks/resetAll";
-import {useState} from "react";
+import { useState } from "react";
 import Spinner from "react-bootstrap/Spinner";
 
 function ResetAll() {
-    const navigate = useNavigate();
-    const { reseted, error, reset } = resetAll();
-    const[loading, setLoading] = useState(false); 
-    
-    const handleReset = () => {
-        setLoading(true);
-        reset();
-    }
+  const navigate = useNavigate();
+  const { reseted, error, reset } = resetAll();
+  const [loading, setLoading] = useState(false);
 
+  const handleReset = () => {
+    setLoading(true);
+    reset();
+  };
 
-
-    return(
-        <Container>
+  return (
+    <Container>
+      <Row>
+        <Col>
+          <nav aria-label="breadcrumb">
+            <ol className="breadcrumb">
+              <li className="breadcrumb-item">
+                <Link to="/">Home</Link>
+              </li>
+              <li className="breadcrumb-item">
+                <Link to="/help">Help</Link>
+              </li>
+              <li className="breadcrumb-item active" aria-current="page">
+                Reset Labs@Home
+              </li>
+            </ol>
+          </nav>
+        </Col>
+      </Row>
+      <>
+        {error ? (
+          <>
             <Row>
-                <Col>
-                    <nav aria-label="breadcrumb">
-                        <ol className="breadcrumb">
-                            <li className="breadcrumb-item"><Link to="/">Home</Link></li>
-                            <li className="breadcrumb-item"><Link to="/help">Help</Link></li>
-                            <li className="breadcrumb-item active" aria-current="page">Reset Labs@Home</li>
-                        </ol>
-                    </nav>
-                </Col>
-            </Row>
-             <>{error ? (
-                <>
-                <Row>
-                    <Col>
-                    <h1 className="pb-4 text-danger">Failed to Reset Labs@Home</h1>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <p className="px-5">
-                            There was an error trying to reset Labs@Home. 
-                            Please check the{" "}
-                            <Link to="/activity-log">Activity Log</Link> for more details.
-                        </p>
-                        <p className="px-5 text-muted small">
-                            Error details: <code>{error}</code>
-                        </p>
-                    </Col>
-                </Row>
-                <Row>
-                        <Col className="pt-5">
-                            <TwoButtonRow 
-                            rightButtonText="Dismiss"
-                            rightButtonOnClick={() => navigate("/")}
-                            />
-                        </Col>
-                    </Row>
-                </>
-            ) : reseted ? (
-                <>
-                <Row>
-                    <Col>
-                        <h1 className="pb-4">Successfully Reset Labs@Home</h1>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col className="px-5">
-                        <h6 style={{fontSize: "1.25rem"}}>
-                            Labs@Home has been reset to Assignment 1.   
-                        </h6>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col className="pt-5 px-5">
-                        <TwoButtonRow 
-                        rightButtonText="Dismiss"
-                        rightButtonOnClick={() => navigate("/")}
-                         />
-                     </Col>
-                </Row>
-                </>
-            ) : (
-            <>
-            <Row>
-                <Col>
-                    <h1 className="pb-4">Reset Labs@Home</h1>
-                </Col>
+              <Col>
+                <h1 className="pb-4 text-danger">Failed to Reset Labs@Home</h1>
+              </Col>
             </Row>
             <Row>
-                <Col className="px-5">
-                    <WarningMessage>
-                        Warning: if you reset, you will lose all changes made in Labs@Home.
-                        <br />  ALL starting files and assignment work will be deleted.
-                        <br /><h6 className="pt-2"><i>This action cannot be undone</i></h6>
-                    </WarningMessage>
-                </Col>
+              <Col>
+                <p className="px-5">
+                  There was an error trying to reset Labs@Home. Please check the{" "}
+                  <Link to="/activity-log">Activity Log</Link> for more details.
+                </p>
+                <p className="px-5 text-muted small">
+                  Error details: <code>{error}</code>
+                </p>
+              </Col>
             </Row>
             <Row>
-                <Col className="px-5">
-                    <h5>Use when</h5>
-                </Col>
-            </Row>
-            <Row>
-                <Col className="px-5">
-                    <ul>
-                        <li>Starting files are uploaded in the wrong order</li>
-                        <li>Or as a last resort for other errors</li>
-                    </ul>
-                </Col>
-            </Row>
-            {!loading ? (<Row>
-                <Col className="px-5 pt-4">
-                <TwoButtonRow 
-                leftButtonText="Reset"
-                leftButtonOnClick={() => handleReset()}
-                rightButtonText="Cancel"
-                rightButtonOnClick={() => navigate("/help")}
+              <Col className="pt-5">
+                <TwoButtonRow
+                  rightButtonText="Dismiss"
+                  rightButtonOnClick={() => navigate("/")}
                 />
-                </Col>
-            </Row>) : (
+              </Col>
+            </Row>
+          </>
+        ) : reseted ? (
+          <>
             <Row>
+              <Col>
+                <h1 className="pb-4">Successfully Reset Labs@Home</h1>
+              </Col>
+            </Row>
+            <Row>
+              <Col className="px-5">
+                <h6 style={{ fontSize: "1.25rem" }}>
+                  Labs@Home has been reset to Assignment 1.
+                </h6>
+              </Col>
+            </Row>
+            <Row>
+              <Col className="pt-5 px-5">
+                <TwoButtonRow
+                  rightButtonText="Dismiss"
+                  rightButtonOnClick={() => navigate("/")}
+                />
+              </Col>
+            </Row>
+          </>
+        ) : (
+          <>
+            <Row>
+              <Col>
+                <h1 className="pb-4">Reset Labs@Home</h1>
+              </Col>
+            </Row>
+            <Row>
+              <Col className="px-5">
+                <WarningMessage>
+                  Warning: if you reset, you will lose all changes made in
+                  Labs@Home.
+                  <br /> ALL starting files and assignment work will be deleted.
+                  <br />
+                  <h6 className="pt-2">
+                    <i>This action cannot be undone</i>
+                  </h6>
+                </WarningMessage>
+              </Col>
+            </Row>
+            <Row>
+              <Col className="px-5">
+                <h5>Use when</h5>
+              </Col>
+            </Row>
+            <Row>
+              <Col className="px-5">
+                <ul>
+                  <li>Starting files are uploaded in the wrong order</li>
+                  <li>Or as a last resort for other errors</li>
+                </ul>
+              </Col>
+            </Row>
+            {!loading ? (
+              <Row>
                 <Col className="px-5 pt-4">
-                    <Spinner animation="border" variant="primary" role="status" className="mt-4"><span className="visually-hidden">Loading...</span></Spinner>
+                  <TwoButtonRow
+                    leftButtonText="Reset"
+                    leftButtonOnClick={() => handleReset()}
+                    rightButtonText="Cancel"
+                    rightButtonOnClick={() => navigate("/help")}
+                  />
                 </Col>
-            </Row>)}
-            </>
+              </Row>
+            ) : (
+              <Row>
+                <Col className="px-5 pt-4">
+                  <Spinner
+                    animation="border"
+                    variant="primary"
+                    role="status"
+                    className="mt-4"
+                  >
+                    <span className="visually-hidden">Loading...</span>
+                  </Spinner>
+                </Col>
+              </Row>
             )}
-            </>
-        </Container>
-       
-       
-    );
+          </>
+        )}
+      </>
+    </Container>
+  );
 }
 
 export default ResetAll;

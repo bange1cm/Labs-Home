@@ -26,9 +26,7 @@ function Home() {
             Assignment
           </h3>
           <h3>
-            <LinkButton onClick={() => navigate("/download")}>
-              Finish
-            </LinkButton>{" "}
+            <LinkButton onClick={() => navigate("/download")}>Save</LinkButton>{" "}
             Assignment
           </h3>
         </Col>
