@@ -1,9 +1,9 @@
 use std::fs;
 use std::path::PathBuf;
 use crate::activity;
+use crate::qemu;
 use crate::files;
 use crate::playground;
-use crate::qemu;
 
 //Private Helper: helper to get exe_dir
 fn exe_dir() -> Result<std::path::PathBuf, String> {
@@ -24,7 +24,8 @@ fn get_marker_file_path() -> Result<PathBuf, String> {
 }
 
 /// Check if this is the first time the app is running
-fn is_first_run() -> Result<bool, String> {
+#[tauri::command]
+pub fn is_first_run() -> Result<bool, String> {
     let marker_path = get_marker_file_path()?;
     Ok(!marker_path.exists())
 }
@@ -54,11 +55,10 @@ fn mark_initialized() -> Result<(), String> {
     Ok(())
 }
 
-pub fn initialize() -> Result<(), String> {
-    if is_first_run()? {
-        run_setup()?; //makes overlay files and adds activity
-        mark_initialized()?; //makes the marker file so the initialization is tracked
-    }
-    
+// Run initialization (callable from frontend)
+#[tauri::command]
+pub fn run_initialization() -> Result<(), String> {
+    run_setup()?;
+    mark_initialized()?;
     Ok(())
 }

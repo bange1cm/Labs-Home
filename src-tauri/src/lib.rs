@@ -18,9 +18,6 @@ mod initialize;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // Run first-time initialization if needed
-    initialize::initialize().expect("Failed to initialize application");
-    
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
@@ -38,6 +35,8 @@ pub fn run() {
             files::reset_all_data,
             playground::reset_playground,
             playground::launch_playground,
+            initialize::run_initialization,
+            initialize::is_first_run,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
