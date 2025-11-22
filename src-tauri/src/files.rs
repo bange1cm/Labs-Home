@@ -16,8 +16,8 @@ fn get_overlay_path(assignment: u32) -> Result<PathBuf, String>{
     Ok(overlay_path)
 }
 
-//Private helper: create new overlay file
-fn create_overlay_file(drives_dir: &PathBuf, assignment: u32)-> Result<(), String> {
+// helper: create new overlay file, also called to initialize 
+pub fn create_overlay_file(drives_dir: &PathBuf, assignment: u32)-> Result<(), String> {
     let base_path = drives_dir.join("base").join("base.qcow2");
     let overlay_path: PathBuf = get_overlay_path(assignment)?;
 

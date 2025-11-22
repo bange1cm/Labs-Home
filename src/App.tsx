@@ -12,6 +12,8 @@ import MoreHelp from "./pages/MoreHelp";
 import WorkExplanation from "./pages/WorkExplanation";
 import ActivityLog from "./pages/ActivityLog";
 import Playground from "./pages/Playground";
+import LaunchPlayground from "./pages/LaunchPlayground";
+import ResetPlayground from "./pages/ResetPlayground";
 
 function App() {
   return (
@@ -34,6 +36,8 @@ function App() {
         {/* Playground Routes */}
         <Route element={<PlaygroundLayout />}>
           <Route path="/playground" element={<Playground />} />
+          <Route path="/playground-launch" element={<LaunchPlayground />} />
+          <Route path="/playground-reset" element={<ResetPlayground />} />
         </Route>
       </Routes>
     </HashRouter>

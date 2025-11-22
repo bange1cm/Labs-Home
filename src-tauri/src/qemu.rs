@@ -25,9 +25,8 @@ fn get_exe_dir() -> Result<PathBuf, String> {
 pub fn get_drives_dir() -> Result<PathBuf, String> {
     Ok(get_exe_dir()?.join("drives"))
 }
-
-//private helper. resources/win64
-fn get_win64_dir(app: tauri::AppHandle) -> Result<PathBuf, String> {
+//helper. resources/win64
+pub fn get_win64_dir(app: tauri::AppHandle) -> Result<PathBuf, String> {
     let win64 = app
         .path()
         .resource_dir()

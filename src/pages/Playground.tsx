@@ -10,13 +10,13 @@ function Playground() {
         <Col className="py-4">
           <h1>Playground</h1>
           <h3>
-            <LinkButton onClick={() => navigate("/launch-playground")}>
+            <LinkButton onClick={() => navigate("/playground-launch")}>
               Launch
             </LinkButton>{" "}
             Playground
           </h3>
           <h3>
-            <LinkButton onClick={() => navigate("/reset-playground")}>
+            <LinkButton onClick={() => navigate("/playground-reset")}>
               Reset
             </LinkButton>{" "}
             Playground
