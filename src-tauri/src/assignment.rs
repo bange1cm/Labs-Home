@@ -19,7 +19,7 @@ fn exe_dir() -> Result<std::path::PathBuf, String> {
 // Private helper: Resolve assignment.txt in the read-only resources folder
 fn assignment_file_path() -> Result<PathBuf, String> {
     let dir = exe_dir()?;
-    Ok(dir.join("assignment.txt"))
+    Ok(dir.join("resources").join("assignment.txt"))
 }
 
 

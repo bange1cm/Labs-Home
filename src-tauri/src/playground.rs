@@ -1,44 +1,66 @@
 use std::process::Command;
 use std::os::windows::process::CommandExt;
-use tauri::{Manager, Emitter};
+use tauri::{Emitter};
 use std::path::PathBuf;
 use std::thread;
 use std::time::Duration;
 use std::fs;
-use crate::activity;
-use crate::assignment;
-
 const CREATE_NEW_CONSOLE: u32 = 0x00000010;
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 
-//Private helper
-fn get_exe_dir() -> Result<PathBuf, String> {
+// Helper to get qemu-img executable path
+fn get_qemu_img_path() -> Result<PathBuf, String> {
     let exe = std::env::current_exe()
         .map_err(|e| format!("Failed to get current_exe: {}", e))?;
     
-    exe.parent()
-        .ok_or("Failed to get parent directory of exe".to_string())
-        .map(|p| p.to_path_buf())
-}
-
-//public helper (can access in other rust files)
-pub fn get_drives_dir() -> Result<PathBuf, String> {
-    Ok(get_exe_dir()?.join("drives"))
-}
-//helper. resources/win64
-pub fn get_win64_dir(app: tauri::AppHandle) -> Result<PathBuf, String> {
-    let win64 = app
-        .path()
-        .resource_dir()
-        .map_err(|e| e.to_string())?
-        .join("resources")
-        .join("win64");
-
-    if !win64.exists() {
-        return Err(format!("Win64 folder not found: {:?}", win64));
+    let exe_dir = exe.parent()
+        .ok_or("Failed to get parent directory of exe")?;
+    
+    // qemu-img.exe is in resources/qemu-img/ with its own DLLs
+    let qemu_img_path = exe_dir.join("resources").join("qemu-img").join("qemu-img.exe");
+    
+    if !qemu_img_path.exists() {
+        return Err(format!("qemu-img.exe not found at: {:?}", qemu_img_path));
     }
+    
+    Ok(qemu_img_path)
+}
 
-    Ok(win64)
+//private helper: only one overlay exists
+fn get_overlay_path() -> Result<PathBuf, String>{
+    // get fron qemu.rs
+    let drives_dir = crate::qemu::get_drives_dir()?;
+
+    let overlay_path = drives_dir
+        .join("playground")
+        .join("overlay_playground.qcow2");
+
+    Ok(overlay_path)
+}
+
+// helper: create a new overlay, also use to initialize
+pub fn create_overlay_file(drives_dir: &PathBuf)-> Result<(), String> {
+    let base_path = drives_dir.join("base").join("base_original.qcow2");
+    let overlay_path: PathBuf = get_overlay_path()?;
+    let qemu_img = get_qemu_img_path()?;
+
+    let status_create = Command::new(qemu_img)
+        .arg("create")
+        .arg("-f")
+        .arg("qcow2")
+        .arg("-F")
+        .arg("qcow2")
+        .arg("-b")
+        .arg(base_path.to_string_lossy().to_string())
+        .arg(overlay_path.to_string_lossy().to_string())
+        .status()
+        .map_err(|e| e.to_string())?;
+
+    if status_create.success() {
+        Ok(())
+    } else {
+        Err("Failed to create playground overlay file".to_string())
+    }
 }
 
 //Private helper
@@ -52,14 +74,11 @@ fn is_qemu_process_running() -> bool {
         .unwrap_or(false)
 }
 
-//Use: invoke(launch_qemu)
+//launch_playground
 #[tauri::command]
-pub fn launch_qemu(app_handle: tauri::AppHandle) -> Result<(), String> {
-    let current_assignment = assignment::get_assignment()?;
-    activity::add_activity(format!("Attempting to launch Assignment {}", current_assignment)).ok();
+pub fn launch_playground(app_handle: tauri::AppHandle) -> Result<(), String> {
 
-    let win64_dir = get_win64_dir(app_handle.clone())?;
-    let drives_dir = get_drives_dir()?;
+    let win64_dir = crate::qemu::get_win64_dir(app_handle.clone())?;
 
     //qemu exe inside resources/win64
     let qemu_exe = win64_dir.join("qemu-system-x86_64.exe");
@@ -72,9 +91,7 @@ pub fn launch_qemu(app_handle: tauri::AppHandle) -> Result<(), String> {
         .trim_start_matches(r"\\?\");
 
     //overlay file inside drives/overlay
-    let overlay_path = drives_dir
-        .join("overlay")
-        .join(format!("overlay_a{}.qcow2", current_assignment));
+      let overlay_path: PathBuf = get_overlay_path()?;
     if !overlay_path.exists() {
         return Err(format!("Overlay disk not found: {:?}", overlay_path));
     }
@@ -84,10 +101,10 @@ pub fn launch_qemu(app_handle: tauri::AppHandle) -> Result<(), String> {
         .trim_start_matches(r"\\?\");
 
     //use batch file to launch new terminal
-    let batch_file = std::env::temp_dir().join(format!("launch_qemu_{}.bat", current_assignment));
+    let batch_file = std::env::temp_dir().join(format!("launch_qemu_playground.bat"));
     let batch_content = format!(
         "@echo off\r\n\
-        title QEMU Assignment {}\r\n\
+        title QEMU Playground\r\n\
         echo Starting QEMU...\r\n\
         echo.\r\n\
         \"{}\" -m 1G -smp 2 -nographic -device virtio-net-pci,netdev=net0 -netdev user,id=net0,hostfwd=tcp::2222-:22 -drive if=virtio,format=qcow2,file=\"{}\" -monitor telnet::45454,server,nowait -serial mon:stdio\r\n\
@@ -96,7 +113,6 @@ pub fn launch_qemu(app_handle: tauri::AppHandle) -> Result<(), String> {
         echo Press any key to close this window...\r\n\
         pause > nul\r\n\
         del \"%~f0\"\r\n",
-        current_assignment,
         qemu_exe_str,
         overlay_path_str
     );
@@ -124,7 +140,6 @@ pub fn launch_qemu(app_handle: tauri::AppHandle) -> Result<(), String> {
         }
 
         if !started {
-            activity::add_activity("QEMU process never started".to_string()).ok();
             app_handle.emit("qemu-status", "error").ok();
             return;
         }
@@ -138,6 +153,31 @@ pub fn launch_qemu(app_handle: tauri::AppHandle) -> Result<(), String> {
             }
         }
     });
+
+    Ok(())
+}
+
+
+//reset_playground
+#[tauri::command]
+pub fn reset_playground() -> Result<(), String> {
+
+    // get fron qemu.rs
+    let drives_dir = crate::qemu::get_drives_dir()?;
+
+    // overlay full path
+    let overlay_path = get_overlay_path()?;
+
+    // Remove the overlay file
+    if overlay_path.exists() {
+        std::fs::remove_file(&overlay_path).map_err(|e| {format!("Failed to remove overlay file for the Playground with error: {}", e)})?;
+    }
+    else{
+        return Err(format!("Overlay file not found: overlay_playground"));
+    }
+
+    // Create a new overlay file based on the base image
+    create_overlay_file(&drives_dir)?;
 
     Ok(())
 }

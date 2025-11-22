@@ -25,7 +25,7 @@ fn exe_dir() -> Result<std::path::PathBuf, String> {
 // Private helper: path helper
 fn get_data_file() -> Result<PathBuf, String> {
     let dir = exe_dir()?;
-    Ok(dir.join("activity_log.json"))
+    Ok(dir.join("resources").join("activity_log.json"))
 }
 
 // Private helper: read JSON log

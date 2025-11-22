@@ -58,7 +58,7 @@ function ResetAll() {
               <Col className="pt-5">
                 <TwoButtonRow
                   rightButtonText="Dismiss"
-                  rightButtonOnClick={() => navigate("/")}
+                  rightButtonOnClick={() => navigate("/help")}
                 />
               </Col>
             </Row>
@@ -81,7 +81,7 @@ function ResetAll() {
               <Col className="pt-5 px-5">
                 <TwoButtonRow
                   rightButtonText="Dismiss"
-                  rightButtonOnClick={() => navigate("/")}
+                  rightButtonOnClick={() => navigate("/help")}
                 />
               </Col>
             </Row>
@@ -98,7 +98,10 @@ function ResetAll() {
                 <WarningMessage>
                   Warning: if you reset, you will lose all changes made in
                   Labs@Home.
-                  <br /> ALL starting files and assignment work will be deleted.
+                  <br />
+                  ALL starting files and assignment work will be deleted.
+                  <br />
+                  Playground changes will not be deleted
                   <br />
                   <h6 className="pt-2">
                     <i>This action cannot be undone</i>

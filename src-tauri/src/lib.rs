@@ -12,6 +12,8 @@ mod activity;
 mod assignment;
 mod files;
 mod qemu;
+mod playground;
+mod initialize;
 
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -31,6 +33,10 @@ pub fn run() {
             files::process_uploaded_file,
             files::restart_assignment,
             files::reset_all_data,
+            playground::reset_playground,
+            playground::launch_playground,
+            initialize::run_initialization,
+            initialize::is_first_run,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -2,24 +2,18 @@ import { Container, Row, Col } from "react-bootstrap";
 import TwoButtonRow from "../components/TwoButtonRow";
 import { useNavigate, Link } from "react-router-dom";
 import WarningMessage from "../components/WarningMessage";
-import { useAssignmentCounter } from "../hooks/useAssignmentCounter";
-import { useEffect, useState } from "react";
-import { restartAssignment } from "../hooks/restartAssignment";
+import { resetPlayground } from "../hooks/resetPlayground";
+import { useState } from "react";
 import Spinner from "react-bootstrap/Spinner";
 
-function RestartAssignment() {
+function ResetPlayground() {
   const navigate = useNavigate();
-  const { currentAssignment, loadAssignment } = useAssignmentCounter();
-  const { restarted, error, restart } = restartAssignment();
+  const { reseted, error, reset } = resetPlayground();
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    loadAssignment();
-  }, []);
-
-  const handleRestart = () => {
+  const handleReset = () => {
     setLoading(true);
-    restart();
+    reset();
   };
 
   return (
@@ -29,13 +23,10 @@ function RestartAssignment() {
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
               <li className="breadcrumb-item">
-                <Link to="/">Home</Link>
-              </li>
-              <li className="breadcrumb-item">
-                <Link to="/help">Help</Link>
+                <Link to="/playground">Playground</Link>
               </li>
               <li className="breadcrumb-item active" aria-current="page">
-                Restart Current Assignment
+                Reset Playground
               </li>
             </ol>
           </nav>
@@ -47,16 +38,14 @@ function RestartAssignment() {
             <Row>
               <Col>
                 <h1 className="pb-4 text-danger">
-                  Failed to Restart Assignment
+                  Failed to Reset the Playground
                 </h1>
               </Col>
             </Row>
             <Row>
               <Col>
                 <p className="px-5">
-                  There was an error trying to restart assignment{" "}
-                  {currentAssignment ?? "Loading..."}. Please check the{" "}
-                  <Link to="/activity-log">Activity Log</Link> for more details.
+                  There was an error trying to reset the Playground.
                 </p>
                 <p className="px-5 text-muted small">
                   Error details: <code>{error}</code>
@@ -67,26 +56,22 @@ function RestartAssignment() {
               <Col className="pt-5">
                 <TwoButtonRow
                   rightButtonText="Dismiss"
-                  rightButtonOnClick={() => navigate("/help")}
+                  rightButtonOnClick={() => navigate("/playground")}
                 />
               </Col>
             </Row>
           </>
-        ) : restarted ? (
+        ) : reseted ? (
           <>
             <Row>
               <Col>
-                <h1 className="pb-4">
-                  Successfully Restarted Assignment{" "}
-                  {currentAssignment ?? "Loading..."}
-                </h1>
+                <h1 className="pb-4">Successfully Reset Playground</h1>
               </Col>
             </Row>
             <Row>
               <Col className="px-5">
                 <h6 style={{ fontSize: "1.25rem" }}>
-                  All changes for Assignment {currentAssignment} have been
-                  deleted.
+                  All the Playground changes have been been deleted.
                 </h6>
               </Col>
             </Row>
@@ -94,7 +79,7 @@ function RestartAssignment() {
               <Col className="pt-5 px-5">
                 <TwoButtonRow
                   rightButtonText="Dismiss"
-                  rightButtonOnClick={() => navigate("/")}
+                  rightButtonOnClick={() => navigate("/playground")}
                 />
               </Col>
             </Row>
@@ -103,15 +88,14 @@ function RestartAssignment() {
           <>
             <Row>
               <Col>
-                <h1 className="pb-4">Restart Assignment {currentAssignment}</h1>
+                <h1 className="pb-4">Reset Playground</h1>
               </Col>
             </Row>
             <Row>
               <Col className="px-5">
                 <WarningMessage>
-                  Warning: if you restart, you will return to the starting file
-                  and lose all changes for Assignment{" "}
-                  {currentAssignment ?? "Loading..."}.
+                  Warning: if you reset, you will lose all changes made in the
+                  Playground
                   <br />
                   <h6 className="pt-2">
                     <i>This action cannot be undone</i>
@@ -123,10 +107,10 @@ function RestartAssignment() {
               <Row>
                 <Col className="px-5 pt-4">
                   <TwoButtonRow
-                    leftButtonText="Restart"
-                    leftButtonOnClick={() => handleRestart()}
+                    leftButtonText="Reset"
+                    leftButtonOnClick={() => handleReset()}
                     rightButtonText="Cancel"
-                    rightButtonOnClick={() => navigate("/help")}
+                    rightButtonOnClick={() => navigate("/playground")}
                   />
                 </Col>
               </Row>
@@ -151,4 +135,4 @@ function RestartAssignment() {
   );
 }
 
-export default RestartAssignment;
+export default ResetPlayground;
