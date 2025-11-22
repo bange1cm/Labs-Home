@@ -8,6 +8,24 @@ use std::fs;
 const CREATE_NEW_CONSOLE: u32 = 0x00000010;
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 
+// Helper to get qemu-img executable path
+fn get_qemu_img_path() -> Result<PathBuf, String> {
+    let exe = std::env::current_exe()
+        .map_err(|e| format!("Failed to get current_exe: {}", e))?;
+    
+    let exe_dir = exe.parent()
+        .ok_or("Failed to get parent directory of exe")?;
+    
+    // qemu-img.exe is in resources/qemu-img/ with its own DLLs
+    let qemu_img_path = exe_dir.join("resources").join("qemu-img").join("qemu-img.exe");
+    
+    if !qemu_img_path.exists() {
+        return Err(format!("qemu-img.exe not found at: {:?}", qemu_img_path));
+    }
+    
+    Ok(qemu_img_path)
+}
+
 //private helper: only one overlay exists
 fn get_overlay_path() -> Result<PathBuf, String>{
     // get fron qemu.rs
@@ -22,10 +40,11 @@ fn get_overlay_path() -> Result<PathBuf, String>{
 
 // helper: create a new overlay, also use to initialize
 pub fn create_overlay_file(drives_dir: &PathBuf)-> Result<(), String> {
-    let base_path = drives_dir.join("base").join("base.qcow2");
+    let base_path = drives_dir.join("base").join("base_original.qcow2");
     let overlay_path: PathBuf = get_overlay_path()?;
+    let qemu_img = get_qemu_img_path()?;
 
-    let status_create = Command::new("qemu-img")
+    let status_create = Command::new(qemu_img)
         .arg("create")
         .arg("-f")
         .arg("qcow2")

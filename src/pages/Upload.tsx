@@ -183,10 +183,10 @@ function Upload() {
               <Row>
                 <Col className="px-5 pt-4">
                   <TwoButtonRow
-                    leftButtonText="Reset"
+                    leftButtonText="Upload"
                     leftButtonOnClick={() => handleUpload()}
                     rightButtonText="Cancel"
-                    rightButtonOnClick={() => navigate("/help")}
+                    rightButtonOnClick={() => navigate("/")}
                   />
                 </Col>
               </Row>

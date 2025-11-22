@@ -2,6 +2,23 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 
+// Helper to get qemu-img executable path
+fn get_qemu_img_path() -> Result<PathBuf, String> {
+    let exe = std::env::current_exe()
+        .map_err(|e| format!("Failed to get current_exe: {}", e))?;
+    
+    let exe_dir = exe.parent()
+        .ok_or("Failed to get parent directory of exe")?;
+    
+    // qemu-img.exe is in resources/qemu-img/ with its own DLLs
+    let qemu_img_path = exe_dir.join("resources").join("qemu-img").join("qemu-img.exe");
+    
+    if !qemu_img_path.exists() {
+        return Err(format!("qemu-img.exe not found at: {:?}", qemu_img_path));
+    }
+    
+    Ok(qemu_img_path)
+}
 //private helper: get overlay path
 fn get_overlay_path(assignment: u32) -> Result<PathBuf, String>{
     // get fron qemu.rs
@@ -20,8 +37,9 @@ fn get_overlay_path(assignment: u32) -> Result<PathBuf, String>{
 pub fn create_overlay_file(drives_dir: &PathBuf, assignment: u32)-> Result<(), String> {
     let base_path = drives_dir.join("base").join("base.qcow2");
     let overlay_path: PathBuf = get_overlay_path(assignment)?;
+    let qemu_img = get_qemu_img_path()?;
 
-    let status_create = Command::new("qemu-img")
+    let status_create = Command::new(qemu_img)
         .arg("create")
         .arg("-f")
         .arg("qcow2")
@@ -81,6 +99,7 @@ pub fn process_uploaded_file(file_path: String) -> Result<(), String> {
     let professor_dir = drives_dir.join("professor");
 
     let base_path = drives_dir.join("base").join("base.qcow2");
+    let qemu_img = get_qemu_img_path()?;
 
     //receive the file path 
     let source_path = PathBuf::from(&file_path);
@@ -96,7 +115,7 @@ pub fn process_uploaded_file(file_path: String) -> Result<(), String> {
         .map_err(|e| format!("Failed to copy starting file: {}", e))?;
 
     // Rebase using qemu-img
-    let status_rebase = Command::new("qemu-img")
+    let status_rebase = Command::new(&qemu_img)
         .arg("rebase")
         .arg("-u")
         .arg("-b")
@@ -110,7 +129,7 @@ pub fn process_uploaded_file(file_path: String) -> Result<(), String> {
     }
 
     //Commit using qemu-img
-    let status_commit = Command::new("qemu-img")
+    let status_commit = Command::new(&qemu_img)
         .arg("commit")
         .arg(professor_path.to_string_lossy().to_string())
         .status()

@@ -35,12 +35,33 @@ fn run_setup() -> Result<(), String> {
     activity::add_activity(format!("Running first time set up")).ok();
   
     //setup tasks
-    //make qemu overlay for assignment 1
-    let drives_dir = qemu::get_drives_dir()?;
-    files::create_overlay_file(&drives_dir, 1)?; 
-    //make playground overlay
-    playground::create_overlay_file(&drives_dir)?;
+    activity::add_activity(format!("Step 1: Getting drives directory")).ok();
+    let drives_dir = qemu::get_drives_dir().map_err(|e| {
+        let err = format!("Failed to get drives_dir: {}", e);
+        activity::add_activity(err.clone()).ok();
+        e
+    })?;
+    activity::add_activity(format!("Drives directory: {:?}", drives_dir)).ok();
     
+    //make qemu overlay for assignment 1
+    activity::add_activity(format!("Step 2: Creating overlay file for assignment 1")).ok();
+    files::create_overlay_file(&drives_dir, 1).map_err(|e| {
+        let err = format!("Failed to create overlay file for assignment 1: {}", e);
+        activity::add_activity(err.clone()).ok();
+        e
+    })?;
+    activity::add_activity(format!("Successfully created overlay for assignment 1")).ok();
+    
+    //make playground overlay
+    activity::add_activity(format!("Step 3: Creating playground overlay")).ok();
+    playground::create_overlay_file(&drives_dir).map_err(|e| {
+        let err = format!("Failed to create playground overlay: {}", e);
+        activity::add_activity(err.clone()).ok();
+        e
+    })?;
+    activity::add_activity(format!("Successfully created playground overlay")).ok();
+    
+    activity::add_activity(format!("Setup tasks completed successfully")).ok();
     Ok(())
 }
 
@@ -52,13 +73,16 @@ fn mark_initialized() -> Result<(), String> {
     fs::write(&marker_path, "Initialized")
         .map_err(|e| format!("Failed to write marker file: {}", e))?;
     
+    activity::add_activity(format!("Marked as initialized")).ok();
     Ok(())
 }
 
 // Run initialization (callable from frontend)
 #[tauri::command]
 pub fn run_initialization() -> Result<(), String> {
+    activity::add_activity(format!("run_initialization called")).ok();
     run_setup()?;
     mark_initialized()?;
+    activity::add_activity(format!("Initialization complete")).ok();
     Ok(())
 }

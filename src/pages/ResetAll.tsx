@@ -58,7 +58,7 @@ function ResetAll() {
               <Col className="pt-5">
                 <TwoButtonRow
                   rightButtonText="Dismiss"
-                  rightButtonOnClick={() => navigate("/")}
+                  rightButtonOnClick={() => navigate("/help")}
                 />
               </Col>
             </Row>
@@ -81,7 +81,7 @@ function ResetAll() {
               <Col className="pt-5 px-5">
                 <TwoButtonRow
                   rightButtonText="Dismiss"
-                  rightButtonOnClick={() => navigate("/")}
+                  rightButtonOnClick={() => navigate("/help")}
                 />
               </Col>
             </Row>
