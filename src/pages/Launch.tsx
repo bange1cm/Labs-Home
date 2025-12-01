@@ -5,10 +5,18 @@ import TwoButtonRow from "../components/TwoButtonRow";
 import { useNavigate, Link } from "react-router-dom";
 import LoginHintCard from "../components/LoginHintCard";
 import { useQemuLaunch } from "../hooks/useQemuLaunch";
+import { useLaunchContext } from "../contexts/LaunchContext";
+import { useEffect } from "react";
 
 function Launch() {
   const navigate = useNavigate();
   const { launching, error, currentAssignment } = useQemuLaunch();
+  const { setLaunching } = useLaunchContext();
+
+  // Sync local launching state with global context
+  useEffect(() => {
+    setLaunching(launching);
+  }, [launching, setLaunching]);
 
   return (
     <Container>
@@ -17,7 +25,19 @@ function Launch() {
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
               <li className="breadcrumb-item">
-                <a href="/">Home</a>
+                <a
+                  href="/"
+                  onClick={(e) => {
+                    if (launching) e.preventDefault();
+                  }}
+                  style={{
+                    pointerEvents: launching ? "none" : "auto",
+                    opacity: launching ? 0.5 : 1,
+                    cursor: launching ? "not-allowed" : "pointer",
+                  }}
+                >
+                  Home
+                </a>
               </li>
               <li className="breadcrumb-item active" aria-current="page">
                 Launch Assignment

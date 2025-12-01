@@ -8,7 +8,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "./Header.css";
 
-const Header = () => {
+interface HeaderProps {
+  disabled?: boolean;
+}
+
+function Header({ disabled = false }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeKey, setActiveKey] = useState("labs");
@@ -23,6 +27,10 @@ const Header = () => {
   }, [location.pathname]);
 
   const handleTabSelect = (key: string | null) => {
+    if (disabled) {
+      return;
+    }
+
     if (key === "labs") {
       navigate("/");
       setActiveKey("labs");
@@ -32,8 +40,22 @@ const Header = () => {
     }
   };
 
+  const handleHelpClick = () => {
+    if (disabled) {
+      return;
+    }
+    navigate("/help");
+  };
+
   return (
-    <Container fluid>
+    <Container
+      fluid
+      style={{
+        pointerEvents: disabled ? "none" : "auto",
+        opacity: disabled ? 0.5 : 1,
+        userSelect: disabled ? "none" : "auto",
+      }}
+    >
       <Row className="align-items-center py-4">
         <Col>
           <Tabs
@@ -41,8 +63,8 @@ const Header = () => {
             onSelect={handleTabSelect}
             className="mb-0"
           >
-            <Tab eventKey="labs" title="Labs@Home" />
-            <Tab eventKey="playground" title="Playground" />
+            <Tab eventKey="labs" title="Labs@Home" disabled={disabled} />
+            <Tab eventKey="playground" title="Playground" disabled={disabled} />
           </Tabs>
         </Col>
         {activeKey === "labs" && (
@@ -60,7 +82,8 @@ const Header = () => {
                 fontSize: "2rem",
                 lineHeight: "2rem",
               }}
-              onClick={() => navigate("/help")}
+              onClick={handleHelpClick}
+              disabled={disabled}
             >
               ?
             </Button>
@@ -69,6 +92,6 @@ const Header = () => {
       </Row>
     </Container>
   );
-};
+}
 
 export default Header;
