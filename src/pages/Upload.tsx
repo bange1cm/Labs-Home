@@ -143,7 +143,7 @@ function Upload() {
                       verticalAlign: "baseline",
                     }}
                   >
-                    download Assignment {currentAssignment ?? "Loading..."}
+                    save Assignment {currentAssignment ?? "Loading..."}
                   </Button>{" "}
                   before uploading Assignment{" "}
                   {currentAssignment != null
