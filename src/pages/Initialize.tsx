@@ -4,18 +4,34 @@ import { invoke } from "@tauri-apps/api/core";
 import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
 import Alert from "react-bootstrap/Alert";
+import Form from "react-bootstrap/Form";
+import InputGroup from "react-bootstrap/InputGroup";
 
 function Initialize() {
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [globalid, setGlobalid] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleInitialize = async () => {
     setIsInitializing(true);
     setError(null);
 
+    // validate input (local part required)
+    if (globalid.trim() === "") {
+      setValidationError("Global ID is required.");
+      setIsInitializing(false);
+      return;
+    }
+
+    // send only the local part to the backend
+    const localPart = globalid.trim();
+
     try {
-      await invoke("run_initialization");
+      // clear any previous validation error
+      setValidationError(null);
+      await invoke("run_initialization", { globalid: localPart });
       // Navigate to home after successful initialization
       navigate("/");
     } catch (err) {
@@ -56,6 +72,29 @@ function Initialize() {
           </Alert>
         )}
 
+        {!isInitializing && (
+          <Form.Group
+            controlId="globalId"
+            style={{ marginBottom: "20px", textAlign: "left" }}
+          >
+            <Form.Label>Global ID</Form.Label>
+            <InputGroup>
+              <Form.Control
+                value={globalid}
+                onChange={(e) => {
+                  setGlobalid(e.target.value);
+                }}
+                aria-label="Global ID"
+                disabled={isInitializing}
+              />
+              <InputGroup.Text>@cmich.edu</InputGroup.Text>
+            </InputGroup>
+            {validationError && (
+              <Form.Text className="text-danger">{validationError}</Form.Text>
+            )}
+          </Form.Group>
+        )}
+
         <Button
           variant="primary"
           size="lg"
@@ -76,7 +115,7 @@ function Initialize() {
               Initializing...
             </>
           ) : (
-            "Initialize Application"
+            "Initialize"
           )}
         </Button>
 

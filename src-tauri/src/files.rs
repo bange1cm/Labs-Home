@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
+use crate::initialize;
 
 // Helper to get qemu-img executable path
 fn get_qemu_img_path() -> Result<PathBuf, String> {
@@ -24,8 +25,11 @@ fn get_overlay_path(assignment: u32) -> Result<PathBuf, String>{
     // get fron qemu.rs
     let drives_dir = crate::qemu::get_drives_dir()?;
 
+    //get from initalize.rs
+    let global_id = initialize::get_global_id()?;
+
     // overlay filename and full path
-    let overlay_name = format!("overlay_a{}.qcow2", assignment);
+    let overlay_name = format!("{}_a{}.qcow2", global_id, assignment);
     let overlay_path = drives_dir
         .join("overlay")
         .join(&overlay_name);
@@ -54,7 +58,7 @@ pub fn create_overlay_file(drives_dir: &PathBuf, assignment: u32)-> Result<(), S
     if status_create.success() {
         Ok(())
     } else {
-        Err(format!("Failed to create overlay file: overlay_a{}", assignment))
+        Err(format!("Failed to create overlay file: {}_a{}", initialize::get_global_id()?, assignment))
     }
 }
 
@@ -65,7 +69,7 @@ pub fn download_assignment() -> Result<(), String> {
     let current_assignment = crate::assignment::get_assignment()?;
 
     // overlay filename and full path
-    let overlay_name = format!("overlay_a{}.qcow2", current_assignment);
+    let overlay_name = format!("{}_a{}.qcow2", initialize::get_global_id()?, current_assignment);
     let overlay_path = get_overlay_path(current_assignment)?;
 
     if !overlay_path.exists() {
@@ -166,7 +170,7 @@ pub fn restart_assignment() -> Result<(), String> {
         std::fs::remove_file(&overlay_path).map_err(|e| {format!("Failed to remove overlay file for Assignment {} with error: {}", current_assignment, e)})?;
     }
     else{
-        return Err(format!("Overlay file not found: overlay_a{}", current_assignment));
+        return Err(format!("Overlay file not found: {}_a{}", initialize::get_global_id()?, current_assignment));
     }
 
     // Create a new overlay file based on the base image

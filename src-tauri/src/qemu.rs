@@ -58,6 +58,8 @@ pub fn launch_qemu(app_handle: tauri::AppHandle) -> Result<(), String> {
     let current_assignment = assignment::get_assignment()?;
     activity::add_activity(format!("Attempting to launch Assignment {}", current_assignment)).ok();
 
+    let global_id = crate::initialize::get_global_id()?;
+
     let win64_dir = get_win64_dir(app_handle.clone())?;
     let drives_dir = get_drives_dir()?;
 
@@ -74,7 +76,7 @@ pub fn launch_qemu(app_handle: tauri::AppHandle) -> Result<(), String> {
     //overlay file inside drives/overlay
     let overlay_path = drives_dir
         .join("overlay")
-        .join(format!("overlay_a{}.qcow2", current_assignment));
+        .join(format!("{}_a{}.qcow2", global_id, current_assignment));
     if !overlay_path.exists() {
         return Err(format!("Overlay disk not found: {:?}", overlay_path));
     }

@@ -20,6 +20,13 @@ fn exe_dir() -> Result<std::path::PathBuf, String> {
 fn get_marker_file_path() -> Result<PathBuf, String> {
     let dir = exe_dir()?;
     let resources_dir = dir.join("resources");
+    
+    // Create resources directory if it doesn't exist
+    if !resources_dir.exists() {
+        std::fs::create_dir_all(&resources_dir)
+            .map_err(|e| format!("Failed to create resources directory: {}", e))?;
+    }
+    
     Ok(resources_dir.join("initialized.txt"))
 }
 
@@ -31,58 +38,69 @@ pub fn is_first_run() -> Result<bool, String> {
 }
 
 /// Perform first-time setup tasks
-fn run_setup() -> Result<(), String> {
+fn run_setup(globalid: String) -> Result<(), String> {
     activity::add_activity(format!("Running first time set up")).ok();
+
+    write_global_id_marker(&globalid)?;
   
     //setup tasks
-    activity::add_activity(format!("Step 1: Getting drives directory")).ok();
     let drives_dir = qemu::get_drives_dir().map_err(|e| {
         let err = format!("Failed to get drives_dir: {}", e);
         activity::add_activity(err.clone()).ok();
         e
     })?;
-    activity::add_activity(format!("Drives directory: {:?}", drives_dir)).ok();
     
     //make qemu overlay for assignment 1
-    activity::add_activity(format!("Step 2: Creating overlay file for assignment 1")).ok();
     files::create_overlay_file(&drives_dir, 1).map_err(|e| {
         let err = format!("Failed to create overlay file for assignment 1: {}", e);
         activity::add_activity(err.clone()).ok();
         e
     })?;
-    activity::add_activity(format!("Successfully created overlay for assignment 1")).ok();
     
     //make playground overlay
-    activity::add_activity(format!("Step 3: Creating playground overlay")).ok();
     playground::create_overlay_file(&drives_dir).map_err(|e| {
         let err = format!("Failed to create playground overlay: {}", e);
         activity::add_activity(err.clone()).ok();
         e
     })?;
-    activity::add_activity(format!("Successfully created playground overlay")).ok();
     
     activity::add_activity(format!("Setup tasks completed successfully")).ok();
     Ok(())
 }
 
-/// Create marker file to indicate setup is complete
-fn mark_initialized() -> Result<(), String> {
+// Private helper: write the global ID into the first line of initialized.txt
+fn write_global_id_marker(global_id: &str) -> Result<(), String> {
+    let marker_path = get_marker_file_path()?;
+    // Write global_id as first line followed by an initialization marker
+    let content = format!("{}\nInitialized", global_id);
+    fs::write(&marker_path, content).map_err(|e| format!("Failed to write initialization file: {}", e))?;
+    Ok(())
+}
+
+// Public helper: read the global ID from the first line of initialized.txt
+#[tauri::command]
+pub fn get_global_id() -> Result<String, String> {
     let marker_path = get_marker_file_path()?;
     
-    // Create the marker file
-    fs::write(&marker_path, "Initialized")
-        .map_err(|e| format!("Failed to write marker file: {}", e))?;
+    // Check if file exists; if not, return a clear error
+    if !marker_path.exists() {
+        return Err("Application not yet initialized".to_string());
+    }
     
-    activity::add_activity(format!("Marked as initialized")).ok();
-    Ok(())
+    let contents = fs::read_to_string(&marker_path)
+        .map_err(|e| format!("Failed to read marker file: {}", e))?;
+    let first = contents.lines().next().unwrap_or("").trim().to_string();
+    if first.is_empty() {
+        Err("Global ID not found in marker file".to_string())
+    } else {
+        Ok(first)
+    }
 }
 
 // Run initialization (callable from frontend)
 #[tauri::command]
-pub fn run_initialization() -> Result<(), String> {
-    activity::add_activity(format!("run_initialization called")).ok();
-    run_setup()?;
-    mark_initialized()?;
+pub fn run_initialization(globalid: String) -> Result<(), String> {
+    run_setup(globalid)?;
     activity::add_activity(format!("Initialization complete")).ok();
     Ok(())
 }
