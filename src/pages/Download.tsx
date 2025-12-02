@@ -78,15 +78,6 @@ function Download() {
                   The assignment file has been saved in your Downloads folder.
                   It is ready for submission to your professor.
                 </h6>
-                <h6 style={{ fontSize: "1.25rem" }}>
-                  Also, you can now{" "}
-                  <Link to="/upload">upload the professor's starting file</Link>{" "}
-                  for Assignment{" "}
-                  {currentAssignment != null
-                    ? currentAssignment + 1
-                    : "Loading..."}
-                  .
-                </h6>
               </Col>
             </Row>
             <Row>
