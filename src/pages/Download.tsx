@@ -7,7 +7,8 @@ import { useDownloadAssignment } from "../hooks/useDownloadAssignment";
 
 function Download() {
   const navigate = useNavigate();
-  const { downloading, error, currentAssignment } = useDownloadAssignment();
+  const { downloading, error, currentAssignment, overlayName } =
+    useDownloadAssignment();
 
   return (
     <Container>
@@ -75,8 +76,9 @@ function Download() {
             <Row>
               <Col className="px-5">
                 <h6 style={{ fontSize: "1.25rem" }}>
-                  The assignment file has been saved in your Downloads folder.
-                  It is ready for submission to your professor.
+                  The assignment file "{overlayName ?? "overlay"}" has been
+                  saved in your Downloads folder. It is ready for submission to
+                  your professor.
                 </h6>
               </Col>
             </Row>
