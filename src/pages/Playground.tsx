@@ -9,10 +9,12 @@ function Playground() {
       <Row>
         <Col className="py-4">
           <h1>Playground</h1>
-          <h2>
-            Playground space is free to experiment in without affecting
-            Assignments
-          </h2>
+          <h6 className="pt-2">
+            <i>
+              Playground space is free to experiment in without affecting
+              Assignments
+            </i>
+          </h6>
           <h3>
             <LinkButton onClick={() => navigate("/playground-launch")}>
               Launch
