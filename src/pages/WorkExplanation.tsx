@@ -1,6 +1,7 @@
 import { Container, Row, Col } from "react-bootstrap";
 import TwoButtonRow from "../components/TwoButtonRow";
 import { useNavigate, Link } from "react-router-dom";
+import FileManagementImg from "../assets/FileManagement.png";
 
 function WorkExplanation() {
   const navigate = useNavigate();
@@ -31,56 +32,110 @@ function WorkExplanation() {
       </Row>
       <Row>
         <Col className="px-5">
-          <h3>Virtual Machine</h3>
+          <h3>Overview</h3>
           <p>
-            QEMU is a program that lets you run virtual computers (called
-            virtual machines) on your own computer. When you launch an
-            Assignment through Labs@Home, you are using a Debian (Linux) virtual
-            machine powered by QEMU. This virtual machine acts like its own
-            system with its own hard drive, even though that “hard drive” is
-            actually just a file on your own computer.
+            Labs@Home lets you work on a Debian Linux computer that runs inside
+            your own computer. This “computer inside a computer” is called a
+            virtual machine (VM).
+          </p>
+          <p>
+            Your main actions within Labs@Home are:
+            <ul>
+              <li>
+                Launch Assignment: Opens the VM for your current assignment.
+              </li>
+              <li>
+                Save Assignment: Saves your current assignment work to your
+                computer’s Downloads folder.
+              </li>
+              <li>
+                Upload Professor's Starting File: Uploads the professor's
+                starting file to update your VM for the next assignment.
+              </li>
+            </ul>
+          </p>
+        </Col>
+      </Row>
+      <br className="pt-3" />
+      <Row>
+        <Col className="px-5">
+          <h3>Deep Dive</h3>
+        </Col>
+      </Row>
+      <Row>
+        <Col className="px-5">
+          <h5>QEMU</h5>
+          <p>
+            QEMU is a program that lets your computer run a virtual machine
+            (VM). When you launch an Assignment in Labs@Home, you are opening a
+            Debian Linux VM powered by QEMU.
+          </p>
+          <p>
+            Even though it feels like a separate computer, everything in the VM
+            is stored in files on your real computer. QEMU treats these files
+            like the VM’s hard drive, memory, and system state.
           </p>
         </Col>
       </Row>
       <Row>
         <Col className="px-5">
-          <h3>QCOW2 Files</h3>
+          <h5>QCOW2 Files</h5>
           <p>
-            QEMU uses disk image files to store all the data for a virtual
-            machine. One common format is QCOW2 (short for QEMU Copy-On-Write).
-            Labs@Home uses QCOW2 files to manage the virtual "hard drive" of
-            your Debian machine.
+            QEMU stores the VM’s “hard drive” in special files called QCOW2
+            files. This format keeps the files small and allows Labs@Home to
+            track changes without saving the entire VM each time.
+          </p>
+          <p>
+            In Labs@Home, QCOW2 files are used for:
+            <ul>
+              <li>the starting VM state (the base system), and</li>
+              <li>the changes you make during an Assignment.</li>
+            </ul>
           </p>
         </Col>
       </Row>
       <Row>
         <Col className="px-5">
-          <h3>Backing and Overlay Files</h3>
+          <h5>Backing/Base and Overlay Files</h5>
           <p>
-            Each virtual machine starts with a backing file, which acts as the
-            base system image. This backing file is used to create overlay
-            files, which store any changes made to the virtual machine. For each
-            Assignment, Labs@Home creates a new overlay file that builds on the
-            backing file.{" "}
+            Every VM starts with a backing file (also called a base file). This
+            file is the clean, original VM state that all students share.
           </p>
           <p>
-            When your professor asks you to start a new Assignment and provides
-            a starting file, that starting file is actually just an overlay file
-            from your professor. Labs@Home merges the professor's overlay file
-            with your current backing file to prepare your Debian virtual
-            machine for the next Assignment. After that, Labs@Home creates a new
-            overlay file for your assignment changes, and you're ready to work!
+            When you start an Assignment, Labs@Home creates an overlay file.
+            This overlay records only the changes you make, like edited files or
+            system changes. The base file stays untouched.
           </p>
-          <h6>Think of it like layers in an art project</h6>
           <p>
-            The backing file is the base layer, a clean, unchangeable image that
-            everyone starts from. Your overlay file is a transparent layer on
-            top where you make your own edits, like adding color or text. When
-            your professor gives you a starting file / professor overlay, it’s
-            like they’ve painted an update on top of the shared base layer.
+            When your professor gives you a new starting file for the next
+            Assignment, that file is simply the professor’s overlay. Labs@Home
+            merges the professor’s overlay with your base file to create an
+            updated starting point for everyone. After that, Labs@Home generates
+            a fresh overlay file for your own work for the new Assignment.
           </p>
         </Col>
       </Row>
+      <Row>
+        <Col className="px-5">
+          <img
+            src={FileManagementImg}
+            alt="File Management Diagram"
+            style={{ maxWidth: "100%", height: "auto" }}
+          />
+        </Col>
+      </Row>
+      <br className="pt-3" />
+      <Row>
+        <Col className="px-5">
+          <h5>Playground</h5>
+          <p>
+            Labs@Home also includes a separate playground VM, which uses its own
+            base and overlay files so you can freely experiment without
+            affecting your assignment progress.
+          </p>
+        </Col>
+      </Row>
+      <br className="pt-3" />
       <Row>
         <Col className="px-5 py-4">
           <TwoButtonRow
