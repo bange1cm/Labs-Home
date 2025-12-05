@@ -100,17 +100,21 @@ function ResetAll() {
                   Labs@Home.
                   <br />
                   ALL starting files and assignment work will be deleted.
-                  <br />
-                  Playground changes will not be deleted
-                  <br />
                   <h6 className="pt-2">
-                    <i>This action cannot be undone</i>
+                    <i>This action cannot be undone.</i>
                   </h6>
                 </WarningMessage>
               </Col>
             </Row>
             <Row>
               <Col className="px-5">
+                <h6 className="pt-2 pb-2">
+                  <i>Playground work will not be reset.</i>
+                </h6>
+              </Col>
+            </Row>
+            <Row>
+              <Col className="px-5 pt-4">
                 <h5>Use when</h5>
               </Col>
             </Row>
@@ -118,6 +122,7 @@ function ResetAll() {
               <Col className="px-5">
                 <ul>
                   <li>Starting files are uploaded in the wrong order</li>
+                  <li>You want to return to Assignment 1</li>
                   <li>Or as a last resort for other errors</li>
                 </ul>
               </Col>

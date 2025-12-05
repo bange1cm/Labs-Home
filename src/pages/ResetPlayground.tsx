@@ -95,12 +95,19 @@ function ResetPlayground() {
               <Col className="px-5">
                 <WarningMessage>
                   Warning: if you reset, you will lose all changes made in the
-                  Playground
+                  Playground.
                   <br />
                   <h6 className="pt-2">
-                    <i>This action cannot be undone</i>
+                    <i>This action cannot be undone.</i>
                   </h6>
                 </WarningMessage>
+              </Col>
+            </Row>
+            <Row>
+              <Col className="px-5">
+                <h6 className="pt-2 pb-2">
+                  <i>Assignment work will not be reset.</i>
+                </h6>
               </Col>
             </Row>
             {!loading ? (

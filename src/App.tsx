@@ -16,39 +16,45 @@ import ActivityLog from "./pages/ActivityLog";
 import Playground from "./pages/Playground";
 import LaunchPlayground from "./pages/LaunchPlayground";
 import ResetPlayground from "./pages/ResetPlayground";
+import { LaunchProvider } from "./contexts/LaunchContext";
 
 function App() {
   return (
-    <HashRouter>
-      <Routes>
-        {/* Initialization Route - No Layout */}
-        <Route path="/initialize" element={<Initialize />} />
+    <LaunchProvider>
+      <HashRouter>
+        <Routes>
+          {/* Initialization Route - No Layout */}
+          <Route path="/initialize" element={<Initialize />} />
 
-        {/* Protected Routes - Check initialization first */}
-        <Route element={<InitializationGuard />}>
-          {/* Labs@Home Routes */}
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/upload" element={<Upload />} />
-            <Route path="/launch" element={<Launch />} />
-            <Route path="/download" element={<Download />} />
-            <Route path="/help" element={<HelpHome />} />
-            <Route path="/restart-assignment" element={<RestartAssignment />} />
-            <Route path="/reset-all" element={<ResetAll />} />
-            <Route path="/more-help" element={<MoreHelp />} />
-            <Route path="/work-explanation" element={<WorkExplanation />} />
-            <Route path="/activity-log" element={<ActivityLog />} />
-          </Route>
+          {/* Protected Routes - Check initialization first */}
+          <Route element={<InitializationGuard />}>
+            {/* Labs@Home Routes */}
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/upload" element={<Upload />} />
+              <Route path="/launch" element={<Launch />} />
+              <Route path="/download" element={<Download />} />
+              <Route path="/help" element={<HelpHome />} />
+              <Route
+                path="/restart-assignment"
+                element={<RestartAssignment />}
+              />
+              <Route path="/reset-all" element={<ResetAll />} />
+              <Route path="/more-help" element={<MoreHelp />} />
+              <Route path="/work-explanation" element={<WorkExplanation />} />
+              <Route path="/activity-log" element={<ActivityLog />} />
+            </Route>
 
-          {/* Playground Routes */}
-          <Route element={<PlaygroundLayout />}>
-            <Route path="/playground" element={<Playground />} />
-            <Route path="/playground-launch" element={<LaunchPlayground />} />
-            <Route path="/playground-reset" element={<ResetPlayground />} />
+            {/* Playground Routes */}
+            <Route element={<PlaygroundLayout />}>
+              <Route path="/playground" element={<Playground />} />
+              <Route path="/playground-launch" element={<LaunchPlayground />} />
+              <Route path="/playground-reset" element={<ResetPlayground />} />
+            </Route>
           </Route>
-        </Route>
-      </Routes>
-    </HashRouter>
+        </Routes>
+      </HashRouter>
+    </LaunchProvider>
   );
 }
 

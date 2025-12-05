@@ -5,10 +5,18 @@ import TwoButtonRow from "../components/TwoButtonRow";
 import { useNavigate } from "react-router-dom";
 import LoginHintCard from "../components/LoginHintCard";
 import { usePlaygroundLaunch } from "../hooks/usePlaygroundLaunch";
+import { useLaunchContext } from "../contexts/LaunchContext";
+import { useEffect } from "react";
 
 function LaunchPlayground() {
   const navigate = useNavigate();
   const { launching, error } = usePlaygroundLaunch();
+  const { setLaunching } = useLaunchContext();
+
+  // Sync local launching state with global context
+  useEffect(() => {
+    setLaunching(launching);
+  }, [launching, setLaunching]);
 
   return (
     <Container>
@@ -17,7 +25,19 @@ function LaunchPlayground() {
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
               <li className="breadcrumb-item">
-                <a href="/playground">Playground</a>
+                <a
+                  href="/playground"
+                  onClick={(e) => {
+                    if (launching) e.preventDefault();
+                  }}
+                  style={{
+                    pointerEvents: launching ? "none" : "auto",
+                    opacity: launching ? 0.5 : 1,
+                    cursor: launching ? "not-allowed" : "pointer",
+                  }}
+                >
+                  Playground
+                </a>
               </li>
               <li className="breadcrumb-item active" aria-current="page">
                 Launch Playground

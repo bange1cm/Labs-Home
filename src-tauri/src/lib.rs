@@ -37,6 +37,7 @@ pub fn run() {
             playground::launch_playground,
             initialize::run_initialization,
             initialize::is_first_run,
+            initialize::get_global_id,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
